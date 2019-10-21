@@ -7,8 +7,11 @@ interface
 uses
   Classes, SysUtils, raze, LazLogger, math, windows;
 
+const
+  cP600VoiceCount = 6;
+
 type
-  TP600Pot=(ppTune=0,ppValue=2,ppSpeed=4,ppTrkVol=6,ppMod=8,ppPitch=10,ppDACP=12,ppDACM=14);
+  TP600Pot=(ppTune=0,ppValue,ppSpeed,ppTrkVol,ppMod,ppPitch,ppDACP,ppDACM);
 
   TP600LED=(
     pl0=$10,pl1=$11,pl2=$12,pl3=$13,pl4=$14,pl5=$15,pl6=$16,pl7=$17,
@@ -48,8 +51,7 @@ type
     FIOCSData:array[0..7] of Byte;
 
     FDACValue:Word;
-    FMuxedPot:TP600Pot;
-    FDACDemux:Byte;
+    FSHAD,FSHEnable:Byte;
 
     FIncompleteCycles:Double;
 
@@ -73,7 +75,6 @@ type
     function GetPotValues(APot: TP600Pot): Word;
     function GetSevenSegment(AIndex: Integer): Byte;
     procedure SetButtonStates(AButton: TP600Button; AValue: Boolean);
-    procedure SetKeyStates(AKey: Integer; AValue: Boolean);
     procedure SetPotValues(APot: TP600Pot; AValue: Word);
   public
     procedure Initialize;
@@ -89,7 +90,6 @@ type
     property LEDStates:TP600LEDStates read GetLEDStates;
 
     property ButtonStates[AButton:TP600Button]:Boolean write SetButtonStates;
-    property KeyStates[AKey:Integer]:Boolean write SetKeyStates;
 
     property CVValues[ACV:TP600CV]:Word read GetCVValues;
     property CVVolts[ACV:TP600CV]:Double read GetCVVolts;
@@ -242,22 +242,19 @@ end;
 
 function TProphet600Hardware.ADCCompare: Boolean;
 begin
-  Result:=FPotValues[FMuxedPot]>(65535-FDACValue);
+  Result := False;
+  if (FSHAD shr 4) >= 2 then
+    Result:=Integer(FPotValues[TP600Pot(FSHAD shr 4)] shr 4) > (4095 - FDACValue);
 end;
 
 procedure TProphet600Hardware.UpdateCVs;
 var reg:Byte;
+    i: Integer;
 begin
-  reg:=FDACDemux and $7;
-
-  if FDACDemux and $08 = 0 then
-    FCVValues[TP600CV(reg+$00)]:=(65535-FDACValue);
-  if FDACDemux and $10 = 0 then
-    FCVValues[TP600CV(reg+$08)]:=(65535-FDACValue);
-  if FDACDemux and $20 = 0 then
-    FCVValues[TP600CV(reg+$10)]:=(65535-FDACValue);
-  if FDACDemux and $40 = 0 then
-    FCVValues[TP600CV(reg+$18)]:=(65535-FDACValue);
+  reg:=FSHAD and $7;
+  for i := 0 to cP600VoiceCount - 1 do
+    if FSHEnable and (1 shl i) <> 0 then
+      FCVValues[TP600CV(reg+(i shl 3))]:=(4095-FDACValue);
 end;
 
 function TProphet600Hardware.GetCVHertz(ACV: TP600CV): Double;
@@ -282,7 +279,7 @@ end;
 
 function TProphet600Hardware.GetCVVolts(ACV: TP600CV): Double;
 begin
-  Result:=(CVValues[ACV] / 65535.0) * 5.0;
+  Result:=(CVValues[ACV] / 4095.0) * 5.0;
 end;
 
 function TProphet600Hardware.GetPotValues(APot: TP600Pot): Word;
@@ -299,11 +296,6 @@ procedure TProphet600Hardware.SetButtonStates(AButton: TP600Button;
   AValue: Boolean);
 begin
   FKeyStates[Ord(AButton)]:=AValue;
-end;
-
-procedure TProphet600Hardware.SetKeyStates(AKey: Integer; AValue: Boolean);
-begin
-  FKeyStates[64+AKey]:=AValue;
 end;
 
 procedure TProphet600Hardware.SetPotValues(APot: TP600Pot; AValue: Word);
@@ -328,10 +320,9 @@ begin
   end;
 end;
 
-procedure TProphet600Hardware.Write(AIsIO: Boolean; AAddress: Word; AValue: Byte
-  );
-
-var reg:Byte;
+procedure TProphet600Hardware.Write(AIsIO: Boolean; AAddress: Word; AValue: Byte);
+var
+  lv,lh: Byte;
 begin
   if not AIsIO then
   begin
@@ -355,57 +346,79 @@ begin
   end
   else
   begin
+    AAddress := AAddress and $ff;
+
+    //debugln(['W ',Ord(AIsIO),' ',hexStr(AAddress,4),' ',hexStr(AValue,2),' (',AValue,')']);
+
     if AAddress and $10 <> 0 then
     begin
-      // U322
+      // U204
       FIOCSData[AAddress and $07]:=AValue;
 
       case AAddress and $07 of
-        $00,$01:
+        $03:
         begin
           // display
-          if FIOCSData[0] and $10 <> 0 then
+          lv := FIOCSData[2];
+          lh := FIOCSData[3];
+          if lh and $01 <> 0 then
           begin
             FOldDisplay[0]:=FDisplay[0];
-            FDisplay[0]:=FIOCSData[1];
+            FDisplay[0]:=lv;
           end;
-          if FIOCSData[0] and $20 <> 0 then
+          if lh and $02 <> 0 then
           begin
             FOldDisplay[1]:=FDisplay[1];
-            FDisplay[1]:=FIOCSData[1];
+            FDisplay[1]:=lv;
           end;
-          if FIOCSData[0] and $40 <> 0 then
+          if lh and $04 <> 0 then
           begin
             FOldDisplay[2]:=FDisplay[2];
-            FDisplay[2]:=FIOCSData[1];
+            FDisplay[2]:=lv;
           end;
-        end;
-        $02:
-        begin
-          // pot mux
-          reg:=AValue and $0f;
-
-          if AValue and $10 = 0 then
-            FMuxedPot:=TP600Pot(reg);
-          if AValue and $20 = 0 then
-            FMuxedPot:=TP600Pot(reg+$10);
-        end;
-        $05:
-        begin
-          // dac
-          FDACDemux:=AValue;
-          UpdateCVs;
-        end;
-        $06:
-        begin
-
+          if lh and $08 <> 0 then
+          begin
+            FOldDisplay[3]:=FDisplay[3];
+            FDisplay[3]:=lv;
+          end;
+          if lh and $10 <> 0 then
+          begin
+            FOldDisplay[4]:=FDisplay[4];
+            FDisplay[4]:=lv;
+          end;
+          if lh and $20 <> 0 then
+          begin
+            FOldDisplay[5]:=FDisplay[5];
+            FDisplay[5]:=lv;
+          end;
         end;
       end;
     end
-
     else
     begin
-
+      // DAC S&H
+      case AAddress and $03 of
+        $0:
+        begin
+          FDACValue:=(FDACValue and $0fc0) or (Integer(AValue xor $ff) shr 2);
+          UpdateCVs;
+        end;
+        $1:
+        begin
+          FDACValue:=(FDACValue and $003f) or ((Integer(AValue xor $ff) and $3f) shl 6);
+          UpdateCVs;
+        end;
+        $2:
+        begin
+          FSHAD := AValue;
+          UpdateCVs;
+        end;
+        $3:
+        begin
+          FSHEnable := AValue;
+          UpdateCVs;
+        end;
+      end;
     end;
   end;
 end;
@@ -426,21 +439,24 @@ begin
   end
   else
   begin
+    AAddress := AAddress and $ff;
+
+    //debugln(['R ',Ord(AIsIO),' ',hexStr(AAddress,4),' ',hexStr(Result,2),' (',Result,')']);
+
     if AAddress and $10 <> 0 then
     begin
-      if AAddress and $07 = $05 then // CSI0 (misc driver)
+      if AAddress and $07 = $05 then // /MISC_IN
       begin
-        Result:=0;
+        Result:=$05;
         if ADCCompare then
           Result:=Result or $80;
-//        debugln(['R ',Ord(AIsIO),' ',hexStr(AAddress,4),' ',hexStr(Result,2),' (',Result,')']);
       end
-      else if AAddress and $07 = $02 then // CSI1 (switch matrix)
+      else if AAddress and $07 = $01 then // /SWITCH_IN
       begin
-        bIdx:=(FIOCSData[0] and $0f)*8;
-        Result:=0;
-        for i:=0 to 7 do
-          Result:=Result or (ifthen(FKeyStates[i+bIdx],1,0) shl i);
+        bIdx:=FIOCSData[0] * 16;
+        Result:=$80;
+        for i:=0 to 4 do
+          Result:=Result or (ifthen(FKeyStates[i+bIdx],0,1) shl i);
       end;
     end
     else
@@ -448,7 +464,6 @@ begin
 
     end;
   end;
-
 end;
 
 procedure TProphet600Hardware.RunCycles(ACount: Integer);

@@ -331,14 +331,15 @@ begin
   DebugLn(Format( '%s: <Status> %.2x, <Data 1> %.2x <Data 2> %.2x',
     [ MidiInput.Devices[devIndex], status, data1, data2 ] ));
 
-  if data1<61 then
-  begin
-    if status=$90 then
-      P600Emu.HW.KeyStates[data1]:=True
-    else if status=$80 then
-      P600Emu.HW.KeyStates[data1]:=False;
-  end;
-
+  //TODO:
+  //if data1<61 then
+  //begin
+  //  if status=$90 then
+  //    P600Emu.HW.KeyStates[data1]:=True
+  //  else if status=$80 then
+  //    P600Emu.HW.KeyStates[data1]:=False;
+  //end;
+  //
   AMsg.Result:=0;
 end;
 
