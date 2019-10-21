@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CONFIG>
+  <Compiler Value="C:\lazarus\fpc\3.0.4\bin\x86_64-win64\fpc.exe" Date="1325662982"/>
+  <Params Value=" -Rintel -MDelphi -Scaghi -O1 -g -gl -Xg -l -vewnhibq -FiE:\Coding\mtrak_emulator\lib\x86_64-win64 -FuE:\Coding\mtrak_emulator\uEControls_v5.10\lib\x86_64-win64 -FuE:\Coding\mtrak_emulator\bgrabitmap\lib\x86_64-win64\3.0.4 -FuC:\lazarus\lcl\units\x86_64-win64\win32 -FuC:\lazarus\lcl\units\x86_64-win64 -FuC:\lazarus\components\lazutils\lib\x86_64-win64 -FuC:\lazarus\packager\units\x86_64-win64 -FuE:\Coding\mtrak_emulator\ -FUE:\Coding\mtrak_emulator\lib\x86_64-win64\ -FEE:\Coding\mtrak_emulator\ -oE:\Coding\mtrak_emulator\p600emu.exe -dUseCThreads -dLCL -dLCLwin32 p600emu.lpr"/>
+</CONFIG>
