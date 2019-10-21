@@ -19,6 +19,22 @@ type
   TMainForm = class(TForm)
     bt0: TButton;
     bt1: TButton;
+    bt10: TButton;
+    bt11: TButton;
+    bt12: TButton;
+    bt13: TButton;
+    bt14: TButton;
+    bt15: TButton;
+    btAutoCor: TButton;
+    btMetro: TButton;
+    btChorus: TButton;
+    btStart: TButton;
+    btUD: TButton;
+    btAppend: TButton;
+    btAssign: TButton;
+    btRecord: TButton;
+    btStacks: TButton;
+    btAD: TButton;
     bt2: TButton;
     bt3: TButton;
     bt4: TButton;
@@ -27,82 +43,84 @@ type
     bt7: TButton;
     bt8: TButton;
     bt9: TButton;
-    btArpAss: TButton;
-    btArpUD: TButton;
     btFromTape: TButton;
-    btPreset: TButton;
-    btRecord: TButton;
-    btSeq1: TButton;
-    btSeq2: TButton;
+    btMidiCh: TButton;
+    btPrgRec: TButton;
+    btMidiMode: TButton;
+    btPrmEd: TButton;
+    btSeq: TButton;
     btTick: TButton;
     btInit: TButton;
     btToTape: TButton;
-    btTune: TButton;
+    kMasterTune: TuEKnob;
+    kPrmVal: TuEKnob;
+    kMod: TuEKnob;
+    kTrkVol: TuEKnob;
     kSpeed: TuEKnob;
-    llCurCtrl: TLabel;
-    lArpAss: TuELED;
-    lArpUD: TuELED;
-    lbxInputDevices: TCheckListBox;
-    lFromTape: TuELED;
-    lPreset: TuELED;
+    kPitch: TuEKnob;
+    l0: TuELED;
+    l1: TuELED;
+    lUD: TuELED;
+    lAppend: TuELED;
+    lAssign: TuELED;
     lRecord: TuELED;
-    lSeq1: TuELED;
-    lSeq2: TuELED;
-    lToTape: TuELED;
-    lTune: TuELED;
+    lV1: TuELED;
+    lV2: TuELED;
+    lV3: TuELED;
+    lV4: TuELED;
+    lV5: TuELED;
+    lV6: TuELED;
+    lStacks: TuELED;
+    lSA: TuELED;
+    lSB: TuELED;
+    lSC: TuELED;
+    lSD: TuELED;
+    lPrgRec: TuELED;
+    lPrmEd: TuELED;
+    lA: TuELED;
+    l2: TuELED;
+    l3: TuELED;
+    l4: TuELED;
+    l5: TuELED;
+    l6: TuELED;
+    l7: TuELED;
+    l8: TuELED;
+    l9: TuELED;
+    lB: TuELED;
+    lC: TuELED;
+    lD: TuELED;
+    lChorus: TuELED;
+    llCurCtrl: TLabel;
+    lbxInputDevices: TCheckListBox;
     lvCV: TListView;
     lvGates: TListView;
-    Panel1: TPanel;
     pnP600: TPanel;
-    ssDigit1: TSevenSegFrame;
-    ssDigit0: TSevenSegFrame;
-    tbXModFreqA: TToggleBox;
-    tbASaw: TToggleBox;
-    tbASqr: TToggleBox;
-    tbATri: TToggleBox;
-    tbBSaw: TToggleBox;
-    tbBSqr: TToggleBox;
-    tbBTri: TToggleBox;
-    tbXModFilter: TToggleBox;
-    tbLFOTri: TToggleBox;
-    tbLFOFreqAB: TToggleBox;
-    tbLFOPWAB: TToggleBox;
-    tbLFOFilter: TToggleBox;
-    tbUnison: TToggleBox;
-    tbSync: TToggleBox;
-    tbTracking: TTrackBar;
-    kOscBPW: TuEKnob;
-    kMix: TuEKnob;
-    kGlide: TuEKnob;
-    kCutoff: TuEKnob;
-    kReso: TuEKnob;
-    kEnvAmt: TuEKnob;
-    kFilA: TuEKnob;
-    kFilD: TuEKnob;
-    kFilS: TuEKnob;
-    kFilR: TuEKnob;
-    kXModFilEnv: TuEKnob;
-    kAmpA: TuEKnob;
-    kAmpD: TuEKnob;
-    kAmpS: TuEKnob;
-    kAmpR: TuEKnob;
-    kMasterTune: TuEKnob;
-    kVolume: TuEKnob;
-    kXModOscB: TuEKnob;
-    kLFOFreq: TuEKnob;
-    kLFOAmt: TuEKnob;
-    kOscAFreq: TuEKnob;
-    kOscBFine: TuEKnob;
-    kOscBFreq: TuEKnob;
-    kOscAPW: TuEKnob;
+    sA: TShape;
+    sA1: TShape;
+    sB: TShape;
+    sB1: TShape;
+    sC: TShape;
+    sC1: TShape;
+    sD: TShape;
+    sD1: TShape;
+    sDot: TShape;
+    sDot1: TShape;
+    sE: TShape;
+    sE1: TShape;
+    sF: TShape;
+    sF1: TShape;
+    sG: TShape;
+    sG1: TShape;
+    ssLeft: TSevenSegFrame;
+    ssRight: TSevenSegFrame;
     tiTick: TTimer;
     tbRun: TToggleBox;
     procedure btInitClick(Sender: TObject);
     procedure btTickClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
-    procedure kSpeedMouseEnter(Sender: TObject);
-    procedure kSpeedMouseLeave(Sender: TObject);
+    procedure kPrmValMouseEnter(Sender: TObject);
+    procedure kPrmValMouseLeave(Sender: TObject);
     procedure lbxInputDevicesClickCheck(Sender: TObject);
     procedure lvCVData(Sender: TObject; Item: TListItem);
     procedure lvGatesData(Sender: TObject; Item: TListItem);
@@ -110,7 +128,6 @@ type
     procedure P600ButtonMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure tbRunChange(Sender: TObject);
-    procedure tbTrackingChange(Sender: TObject);
     procedure tiTickTimer(Sender: TObject);
   private
     { private declarations }
@@ -151,7 +168,7 @@ begin
   MidiInput.CloseAll;
 end;
 
-procedure TMainForm.kSpeedMouseEnter(Sender: TObject);
+procedure TMainForm.kPrmValMouseEnter(Sender: TObject);
 var k:TuEKnob;
 begin
   k:=Sender as TuEKnob;
@@ -159,7 +176,7 @@ begin
   llCurCtrl.Caption:=Copy(k.Name,2,MaxInt)+' (Value = '+IntToStr(round(k.Position))+')';
 end;
 
-procedure TMainForm.kSpeedMouseLeave(Sender: TObject);
+procedure TMainForm.kPrmValMouseLeave(Sender: TObject);
 begin
   llCurCtrl.Caption:='';
 end;
@@ -200,9 +217,7 @@ end;
 
 procedure TMainForm.P600ButtonClick(Sender: TObject);
 begin
-  if Sender is TToggleBox then
-    P600Emu.HW.ButtonStates[TP600Button((Sender as TToggleBox).Tag)]:=(Sender as TToggleBox).Checked
-  else if Sender is TButton then
+  if Sender is TButton then
     P600Emu.HW.ButtonStates[TP600Button((Sender as TButton).Tag)]:=False;
 end;
 
@@ -216,12 +231,6 @@ end;
 procedure TMainForm.tbRunChange(Sender: TObject);
 begin
   tiTick.Enabled:=tbRun.Checked;
-end;
-
-procedure TMainForm.tbTrackingChange(Sender: TObject);
-begin
-  P600Emu.HW.ButtonStates[pbFilFull]:=tbTracking.Position=0;
-  P600Emu.HW.ButtonStates[pbFilHalf]:=tbTracking.Position=1;
 end;
 
 procedure TMainForm.tiTickTimer(Sender: TObject);
@@ -251,49 +260,48 @@ var cv:TP600CV;
 begin
   with P600Emu.HW do
   begin
-    lSeq1.Active:=plSeq1 in LEDStates;
-    lSeq2.Active:=plSeq2 in LEDStates;
-    lArpUD.Active:=plArpUD in LEDStates;
-    lArpAss.Active:=plArpAssign in LEDStates;
-    lPreset.Active:=plPreset in LEDStates;
-    lRecord.Active:=plRecord in LEDStates;
-    lFromTape.Active:=plFromTape in LEDStates;
-    lToTape.Active:=plToTape in LEDStates;
-    lTune.Active:=plTune in LEDStates;
+    l0	.Active := pl0	        in LEDStates;
+    l1	.Active := pl1	        in LEDStates;
+    l2	.Active := pl2	        in LEDStates;
+    l3	.Active := pl3	        in LEDStates;
+    l4	.Active := pl4	        in LEDStates;
+    l5	.Active := pl5	        in LEDStates;
+    l6	.Active := pl6	        in LEDStates;
+    l7	.Active := pl7	        in LEDStates;
+    l8	.Active := pl8	        in LEDStates;
+    l9	.Active := pl9	        in LEDStates;
+    lA	.Active := plA	        in LEDStates;
+    lB	.Active := plB	        in LEDStates;
+    lC	.Active := plC	        in LEDStates;
+    lD	.Active := plD	        in LEDStates;
+    lPrmEd	.Active := plPrmEd	in LEDStates;
+    lPrgRec	.Active := plPrgRec	in LEDStates;
+    lV1	.Active := plT1	        in LEDStates;
+    lV2	.Active := plT2	        in LEDStates;
+    lV3	.Active := plT3	        in LEDStates;
+    lV4	.Active := plT4	        in LEDStates;
+    lV5	.Active := plT5	        in LEDStates;
+    lV6	.Active := plT6	        in LEDStates;
+    lStacks	.Active := plStack	in LEDStates;
+    lRecord	.Active := plRecord	in LEDStates;
+    lSA	.Active := plSA	        in LEDStates;
+    lSB	.Active := plSB	        in LEDStates;
+    lSC	.Active := plSC	        in LEDStates;
+    lSD	.Active := plSD	        in LEDStates;
+    lUD	.Active := plUD	        in LEDStates;
+    lAssign	.Active := plAssign	in LEDStates;
+    lAppend	.Active := plAppend	in LEDStates;
+    lChorus	.Active := plChorus	in LEDStates;
 
-    ssDigit0.Value:=SevenSegment[0];
-    ssDigit1.Value:=SevenSegment[1];
-    if plDot in LEDStates then
-     ssDigit0.Value:=ssDigit0.Value or $80;
+    ssLeft.Value:=SevenSegment[0];
+    ssRight.Value:=SevenSegment[1];
 
-    PotValues[ppMixer]:=round(kMix.Position);
-    PotValues[ppCutoff]:=round(kCutoff.Position);
-    PotValues[ppResonance]:=round(kReso.Position);
-    PotValues[ppFilEnvAmt]:=round(kEnvAmt.Position);
-    PotValues[ppFilRel]:=round(kFilR.Position);
-    PotValues[ppFilSus]:=round(kFilS.Position);
-    PotValues[ppFilDec]:=round(kFilD.Position);
-    PotValues[ppFilAtt]:=round(kFilA.Position);
-    PotValues[ppAmpRel]:=round(kAmpR.Position);
-    PotValues[ppAmpSus]:=round(kAmpS.Position);
-    PotValues[ppAmpDec]:=round(kAmpD.Position);
-    PotValues[ppAmpAtt]:=round(kAmpA.Position);
-    PotValues[ppGlide]:=round(kGlide.Position);
-    PotValues[ppBPW]:=round(kOscBPW.Position);
-    PotValues[ppMVol]:=round(kVolume.Position);
-    PotValues[ppMTune]:=round(kMasterTune.Position);
+    PotValues[ppTune]:=round(kMasterTune.Position);
+    PotValues[ppValue]:=round(kPrmVal.Position);
     PotValues[ppSpeed]:=round(kSpeed.Position);
-    PotValues[ppAPW]:=round(kOscAPW.Position);
-    PotValues[ppPModFilEnv]:=round(kXModFilEnv.Position);
-    PotValues[ppLFOFreq]:=round(kLFOFreq.Position);
-    PotValues[ppPModOscB]:=round(kXModOscB.Position);
-    PotValues[ppLFOAmt]:=round(kLFOAmt.Position);
-    PotValues[ppFreqB]:=round(kOscBFreq.Position);
-    PotValues[ppFreqA]:=round(kOscAFreq.Position);
-    PotValues[ppFreqBFine]:=round(kOscBFine.Position);
-
-    PotValues[ppPitchWheel]:=32768;
-    PotValues[ppModWheel]:=0;
+    PotValues[ppTrkVol]:=round(kTrkVol.Position);
+    PotValues[ppMod]:=round(kMod.Position);
+    PotValues[ppPitch]:=round(kPitch.Position);
 
     lvCV.Invalidate;
     lvGates.Invalidate;

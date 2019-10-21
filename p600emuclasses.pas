@@ -8,55 +8,38 @@ uses
   Classes, SysUtils, raze, LazLogger, math, windows;
 
 type
-  TP600Pot=(ppMixer=0,ppCutoff=1,ppResonance=2,ppFilEnvAmt=3,ppFilRel=4,ppFilSus=5,
-            ppFilDec=6,ppFilAtt=7,ppAmpRel=8,ppAmpSus=9,ppAmpDec=10,ppAmpAtt=11,
-            ppGlide=12,ppBPW=13,ppMVol=14,ppMTune=15,ppPitchWheel=16,ppModWheel=22,
-            ppSpeed,ppAPW,ppPModFilEnv,ppLFOFreq,ppPModOscB,ppLFOAmt,ppFreqB,ppFreqA,ppFreqBFine);
+  TP600Pot=(ppTune=0,ppValue=2,ppSpeed=4,ppTrkVol=6,ppMod=8,ppPitch=10,ppDACP=12,ppDACM=14);
 
-  TP600LED=(plSeq1=0,plSeq2=1,plArpUD=2,plArpAssign=3,plPreset=4,plRecord=5,plToTape=6,plFromTape=7,plTune=8,plDot=9);
+  TP600LED=(
+    pl0=$10,pl1=$11,pl2=$12,pl3=$13,pl4=$14,pl5=$15,pl6=$16,pl7=$17,
+    pl8=$18,pl9=$19,plA=$1A,plB=$1b,plC=$1c,plD=$1d,plPrmEd=$1e,plPrgRec=$1f,
+    plT1=$20,plT2=$21,plT3=$22,plT4=$23,plT5=$24,plT6=$25,plStack=$26,plRecord=$27,
+    plSA=$28,plSB=$29,plSC=$2a,plSD=$2b,plUD=$2c,plAssign=$2d,plAppend=$2e,plChorus=$2f
+  );
   TP600LEDStates=set of TP600LED;
 
-  TP600CV=(pcOsc1A=0,pcOsc2A,pcOsc3A,pcOsc4A,pcOsc5A,pcOsc6A,
-           pcOsc1B=6,pcOsc2B,pcOsc3B,pcOsc4B,pcOsc5B,pcOsc6B,
-           pcFil1=12,pcFil2,pcFil3,pcFil4,pcFil5,pcFil6,
-           pcAmp1=18,pcAmp2,pcAmp3,pcAmp4,pcAmp5,pcAmp6,
-           pcPModOscB=24,pcVolA,pcVolB,pcMVol,pcAPW,pcExtFil,pcRes,pcBPW);
+  TP600CV=(
+    pcOsc6=$00,pcAmp6,pcRes6,pcFil6,pcMix6,pcMod6,pcPW6,pcShape6,
+    pcOsc5=$08,pcAmp5,pcRes5,pcFil5,pcMix5,pcMod5,pcPW5,pcShape5,
+    pcOsc4=$10,pcAmp4,pcRes4,pcFil4,pcMix4,pcMod4,pcPW4,pcShape4,
+    pcOsc3=$18,pcAmp3,pcRes3,pcFil3,pcMix3,pcMod3,pcPW3,pcShape3,
+    pcOsc2=$20,pcAmp2,pcRes2,pcFil2,pcMix2,pcMod2,pcPW2,pcShape2,
+    pcOsc1=$28,pcAmp1,pcRes1,pcFil1,pcMix1,pcMod1,pcPW1,pcShape1
+  );
 
-  TP600Gate=(pgASaw=0,pgATri,pgSync,pgBSaw,pgBTri,pgPModFA,pgPModFil);
+  TP600Gate=(
+    pgChorusOn=0,pgAudioEnable
+  );
 
-  TP600Button=(pb0=0,pb1,pb2,pb3,pb4,pb5,pb6,pb7,
-               pb8=8,pb9,pbArpUD,pbArpAssign,pbPreset,pbRecord,pbToTape,pbFromTape,
-               pbSeq1=16,pbSeq2,pbTune,
-               pbASqr=24,pbBSqr,pbFilFull,pbFilHalf,pbLFOShape,pbLFOFreq,pbLFOPW,pbLFOFil,
-               pbASaw=32,pbATri,pbSync,pbBSaw,pbBTri,pbPModFA,pbPModFil,pbUnisson);
-
-  { T8253Channel }
-
-  T8253Channel=record
-    Start:Word;
-    Counter:Integer;
-    Mode:Byte;
-    AccessingLSB:Boolean;
-    Gate:Boolean;
-    Output:Boolean;
-    LoadCounterPending:Boolean;
-
-    procedure LoadCounter;
-  end;
-
-  { T8253Timer }
-
-  T8253Timer=record
-  private
-    FControlWord:Byte;
-    FChannels:array[0..2] of T8253Channel;
-  public
-    procedure WriteReg(AReg,AValue:Byte);
-    function ReadReg(AReg:Byte):Byte;
-    procedure RunCycles(AChannel:Byte;ACount:Integer);
-    function GetOutput(AChannel:Byte):Boolean;
-    procedure SetGate(AChannel:Byte;AGate:Boolean);
-  end;
+  TP600Button=(
+    pb0=$00,pb1,pb2,pb3,pb4,
+    pb5=$10,pb6,pb7,pb8,pb9,
+    pbAD=$20,pbPrmEd,pbPrgRec,pbStack,
+    pbChorus=$30,pbMidiCh,pbMidiMode,pbToTape,pbFromTape,
+    pbT1=$40,pbSeq,pbUD,pbAssign,pbRecord,
+    pbT2=$50,pbT3,pbT4,pbT5,pbT6,
+    pbStart=$60,pbAutoCor,pbMetro,pbAppend,pbTP
+  );
 
   { TProphet600Hardware }
 
@@ -64,30 +47,22 @@ type
   private
     FIOCSData:array[0..7] of Byte;
 
-    F8253:T8253Timer;
-
-    FFFStatus:Boolean;
-    FFFD:Boolean;
-    FFFP:Boolean;
-    FFFCL:Boolean;
-
     FDACValue:Word;
     FMuxedPot:TP600Pot;
     FDACDemux:Byte;
 
     FIncompleteCycles:Double;
 
-    FRom:array[0..8191] of Byte;
-    FRam1,FRam2:array[0..2047] of Byte;
+    FRom:array[0..16*1024-1] of Byte;
+    FRam:array[0..10*1024-1] of Byte;
     FPotValues:array[TP600Pot] of Word;
-    FOldDisplay:array[0..2] of Byte;
-    FDisplay:array[0..2] of Byte;
+    FOldDisplay:array[0..5] of Byte;
+    FDisplay:array[0..5] of Byte;
     FCVValues:array[TP600CV] of Word;
     FKeyStates:array[0..127] of Boolean;
 
     function ADCCompare:Boolean;
     procedure UpdateCVs;
-    procedure UpdateFFStatus(AClockTick:Boolean);
 
     // getters/setters
     function GetCVValues(ACV: TP600CV): Word;
@@ -136,29 +111,8 @@ type
     property HW:TProphet600Hardware read FHW;
   end;
 
-  { TProphet600Mockup }
-
-  TMockupInit=procedure(AWrite,ARead,ADebug:Pointer);stdcall;
-  TMockupStart=procedure;stdcall;
-
-  TProphet600Mockup=record
-  private
-    FHW:TProphet600Hardware;
-    FInit:TMockupInit;
-    FStart:TMockupStart;
-  public
-    procedure Initialize;
-
-    procedure Tick;
-
-    property HW:TProphet600Hardware read FHW;
-  end;
 var
-{$if 1}
   P600Emu:TProphet600Emulator;
-{$else}
-  P600Emu:TProphet600Mockup;
-{$endif}
 
 const
   CTickMilliseconds=5;
@@ -205,197 +159,15 @@ begin
   DbgOut([AChar]);
 end;
 
-{ TProphet600Mockup }
-
-procedure TProphet600Mockup.Initialize;
-var hi:HINST;
-begin
-  HW.Initialize;
-  HW.LoadRomFromFile(ExtractFilePath(ParamStr(0))+'p600.bin');
-
-  hi:=LoadLibrary('p600mockup.dll');
-  FInit:=GetProcAddress(hi,'emu_init@12');
-  FStart:=GetProcAddress(hi,'emu_start@0');
-
-  FInit(@P600Mockup_Write,@P600Mockup_Read,@P600Mockup_Debug);
-end;
-
-procedure TProphet600Mockup.Tick;
-begin
-  FStart;
-end;
-
-{ T8253Channel }
-
-procedure T8253Channel.LoadCounter;
-begin
-  if Start=0 then
-    Counter:=65536
-  else
-    Counter:=Start;
-
-  LoadCounterPending:=False;
-end;
-
-{ T8253Timer }
-
-procedure T8253Timer.WriteReg(AReg, AValue: Byte);
-var cmd:Byte;
-begin
-//  DebugLn(['W ',Areg,' ',AValue,' ',binStr(AValue,8)]);
-  if AReg = $03 then
-  begin
-    // control word
-    FControlWord:=AValue;
-
-    FChannels[AValue shr 6].Mode:=(AValue shr 1) and $07;
-
-    // output is initially high except mode 0
-    FChannels[AValue shr 6].Output:=FChannels[AValue shr 6].Mode<>0;
-
-    FChannels[AValue shr 6].AccessingLSB:=True;
-    FChannels[AValue shr 6].LoadCounterPending:=False;
-  end
-  else
-  begin
-    cmd:=(FControlWord shr 4) and $03;
-
-    case cmd of
-      0:
-        Assert(False); //TODO: counter latch command
-      1:
-      begin
-        FChannels[AReg].Start:=(FChannels[AReg].Start and $ff00) or AValue;
-      end;
-      2:
-      begin
-        FChannels[AReg].Start:=(FChannels[AReg].Start and $00ff) or (AValue shl 8);
-      end;
-      3:
-      begin
-        if FChannels[AReg].AccessingLSB then
-          FChannels[AReg].Start:=(FChannels[AReg].Start and $ff00) or AValue
-        else
-          FChannels[AReg].Start:=(FChannels[AReg].Start and $00ff) or (AValue shl 8);
-
-        FChannels[AReg].AccessingLSB:=not FChannels[AReg].AccessingLSB;
-      end;
-    end;
-
-    if (FChannels[AReg].Mode=0) and ((cmd<>3) or FChannels[AReg].AccessingLSB) then // interrupt on terminal count
-      FChannels[AReg].LoadCounterPending:=True;
-  end;
-end;
-
-function T8253Timer.ReadReg(AReg: Byte): Byte;
-var cmd:Byte;
-    wrdCtr:Word;
-begin
-  if AReg=$03 then
-  begin
-    Assert(false);
-  end
-  else
-  begin
-    cmd:=(FControlWord shr 4) and $03;
-
-    wrdCtr:=FChannels[AReg].Counter-1;
-
-    case cmd of
-      0:
-        Assert(False); //TODO: counter latch command
-      1:
-      begin
-        Result:=wrdCtr and $ff;
-      end;
-      2:
-      begin
-        Result:=(wrdCtr and $ff00) shr 8;
-      end;
-      3:
-      begin
-        if FChannels[AReg].AccessingLSB then
-          Result:=wrdCtr and $ff
-        else
-          Result:=(wrdCtr and $ff00) shr 8;
-
-        FChannels[AReg].AccessingLSB:=not FChannels[AReg].AccessingLSB;
-      end;
-    end;
-  end;
-
-//  DebugLn(['R ',Areg,' ',Result,' ',binStr(Result,8)]);
-end;
-
-procedure T8253Timer.RunCycles(AChannel: Byte; ACount: Integer);
-begin
-  case FChannels[AChannel].Mode of
-    0: // interrupt on terminal count
-    begin
-      if (ACount>0) and (FChannels[AChannel].LoadCounterPending) then
-      begin
-        FChannels[AChannel].LoadCounter;
-        Dec(ACount);
-      end;
-
-      if not FChannels[AChannel].Gate or (FChannels[AChannel].Counter=0) then
-        Exit; // disable counting
-    end;
-    1:
-    begin
-      if (ACount>0) and (FChannels[AChannel].LoadCounterPending) then
-      begin
-        FChannels[AChannel].LoadCounter;
-        FChannels[AChannel].Output:=False;
-        Dec(ACount);
-      end;
-    end;
-  end;
-
-  dec(FChannels[AChannel].Counter,ACount);
-
-  if FChannels[AChannel].Counter<=0 then
-  begin
-    case FChannels[AChannel].Mode of
-      0,1: // interrupt on terminal count / one shot
-      begin
-        FChannels[AChannel].Counter:=0;
-        FChannels[AChannel].Output:=True
-      end;
-      else
-      begin
-        Assert(False); // TODO
-      end;
-    end;
-  end;
-end;
-
-function T8253Timer.GetOutput(AChannel: Byte): Boolean;
-begin
-  Result:=FChannels[AChannel].Output;
-end;
-
-procedure T8253Timer.SetGate(AChannel: Byte; AGate: Boolean);
-var goHi:Boolean;
-begin
-  goHi:=not FChannels[AChannel].Gate and AGate;
-  FChannels[AChannel].Gate:=AGate;
-
-  if goHi and (FChannels[AChannel].Mode=1) then // one shot
-  begin
-    FChannels[AChannel].LoadCounterPending:=True;
-  end;
-end;
-
 { TProphet600Emulator }
 
 procedure TProphet600Emulator.Initialize;
 begin
   HW.Initialize;
-  HW.LoadRomFromFile(ExtractFilePath(ParamStr(0))+'p600.bin');
+  HW.LoadRomFromFile(ExtractFilePath(ParamStr(0))+'mtrak.bin');
 
   z80_init_memmap;
-  z80_map_fetch($0000,$1fff,@HW.FRom[0]);
+  z80_map_fetch($0000,$3fff,@HW.FRom[0]);
   z80_add_read($0000,$ffff,Z80_MAP_HANDLED,@P600Emu_ReadMem);
   z80_add_write($0000,$ffff,Z80_MAP_HANDLED,@P600Emu_WriteMem);
   z80_end_memmap;
@@ -422,24 +194,50 @@ end;
 { TProphet600Hardware }
 
 function TProphet600Hardware.GetLEDStates: TP600LEDStates;
-var v0,v1,v2:Byte;
+var v2,v3,v4,v5:Byte;
 begin
   Result:=[];
 
-  v0:=FDisplay[0] or FOldDisplay[0];
-  v1:=FDisplay[1] or FOldDisplay[1];
   v2:=FDisplay[2] or FOldDisplay[2];
+  v3:=FDisplay[3] or FOldDisplay[3];
+  v4:=FDisplay[4] or FOldDisplay[4];
+  v5:=FDisplay[5] or FOldDisplay[5];
 
-  if v0 and $01 <> 0 then Result:=Result + [plSeq1];
-  if v0 and $02 <> 0 then Result:=Result + [plSeq2];
-  if v0 and $04 <> 0 then Result:=Result + [plArpUD];
-  if v0 and $08 <> 0 then Result:=Result + [plArpAssign];
-  if v0 and $10 <> 0 then Result:=Result + [plPreset];
-  if v0 and $20 <> 0 then Result:=Result + [plRecord];
-  if v0 and $40 <> 0 then Result:=Result + [plToTape];
-  if v0 and $80 <> 0 then Result:=Result + [plFromTape];
-  if v1 and $80 <> 0 then Result:=Result + [plDot];
-  if v2 and $80 <> 0 then Result:=Result + [plTune];
+  if v2 and $01 <> 0 then Result:=Result + [pl0];
+  if v2 and $02 <> 0 then Result:=Result + [pl1];
+  if v2 and $04 <> 0 then Result:=Result + [pl2];
+  if v2 and $08 <> 0 then Result:=Result + [pl3];
+  if v2 and $10 <> 0 then Result:=Result + [pl4];
+  if v2 and $20 <> 0 then Result:=Result + [pl5];
+  if v2 and $40 <> 0 then Result:=Result + [pl6];
+  if v2 and $80 <> 0 then Result:=Result + [pl7];
+
+  if v3 and $01 <> 0 then Result:=Result + [pl8];
+  if v3 and $02 <> 0 then Result:=Result + [pl9];
+  if v3 and $04 <> 0 then Result:=Result + [plA];
+  if v3 and $08 <> 0 then Result:=Result + [plB];
+  if v3 and $10 <> 0 then Result:=Result + [plC];
+  if v3 and $20 <> 0 then Result:=Result + [plD];
+  if v3 and $40 <> 0 then Result:=Result + [plPrgRec];
+  if v3 and $80 <> 0 then Result:=Result + [plPrmEd];
+
+  if v4 and $01 <> 0 then Result:=Result + [plT1];
+  if v4 and $02 <> 0 then Result:=Result + [plT2];
+  if v4 and $04 <> 0 then Result:=Result + [plT3];
+  if v4 and $08 <> 0 then Result:=Result + [plT4];
+  if v4 and $10 <> 0 then Result:=Result + [plT5];
+  if v4 and $20 <> 0 then Result:=Result + [plT6];
+  if v4 and $40 <> 0 then Result:=Result + [plStack];
+  if v4 and $80 <> 0 then Result:=Result + [plRecord];
+
+  if v5 and $01 <> 0 then Result:=Result + [plSA];
+  if v5 and $02 <> 0 then Result:=Result + [plSB];
+  if v5 and $04 <> 0 then Result:=Result + [plSC];
+  if v5 and $08 <> 0 then Result:=Result + [plSD];
+  if v5 and $10 <> 0 then Result:=Result + [plUD];
+  if v5 and $20 <> 0 then Result:=Result + [plAssign];
+  if v5 and $40 <> 0 then Result:=Result + [plAppend];
+  if v5 and $80 <> 0 then Result:=Result + [plChorus];
 end;
 
 function TProphet600Hardware.ADCCompare: Boolean;
@@ -462,24 +260,6 @@ begin
     FCVValues[TP600CV(reg+$18)]:=(65535-FDACValue);
 end;
 
-procedure TProphet600Hardware.UpdateFFStatus(AClockTick: Boolean);
-var prev:Boolean;
-begin
-  prev:=FFFStatus;
-
-  if AClockTick then
-    FFFStatus:=not FFFD;
-
-  if not FFFP then
-    FFFStatus:=False;
-
-  if not FFFCL then
-    FFFStatus:=True;
-
-  if prev and not FFFStatus then // 8253 ticks on falling edge of clock
-    F8253.RunCycles(2,1);
-end;
-
 function TProphet600Hardware.GetCVHertz(ACV: TP600CV): Double;
 begin
   Result:=(27.5)*power(2.0,CVVolts[ACV]/0.5);
@@ -488,20 +268,10 @@ end;
 function TProphet600Hardware.GetGateValues(AGate: TP600Gate): Boolean;
 begin
   case AGate of
-    pgASaw:
-      Result:= FIOCSData[3] and $01 <> 0;
-    pgATri:
-      Result:= FIOCSData[3] and $02 <> 0;
-    pgSync:
-      Result:= FIOCSData[3] and $04 <> 0;
-    pgBSaw:
-      Result:= FIOCSData[3] and $08 <> 0;
-    pgBTri:
-      Result:= FIOCSData[3] and $10 <> 0;
-    pgPModFA:
-      Result:= FIOCSData[3] and $20 <> 0;
-    pgPModFil:
-      Result:= FIOCSData[3] and $40 <> 0;
+    pgChorusOn:
+      Result:= FIOCSData[4] and $01 <> 0;
+    pgAudioEnable:
+      Result:= FIOCSData[4] and $02 <> 0;
   end;
 end;
 
@@ -522,7 +292,7 @@ end;
 
 function TProphet600Hardware.GetSevenSegment(AIndex: Integer): Byte;
 begin
-  Result:=(FDisplay[AIndex+1] or FOldDisplay[AIndex+1]) and $7f;
+  Result:=(FDisplay[AIndex] or FOldDisplay[AIndex]) and $ff;
 end;
 
 procedure TProphet600Hardware.SetButtonStates(AButton: TP600Button;
@@ -543,7 +313,7 @@ end;
 
 procedure TProphet600Hardware.Initialize;
 begin
-  FFFStatus:=True;
+
 end;
 
 procedure TProphet600Hardware.LoadRomFromFile(AFileName: String);
@@ -566,27 +336,26 @@ begin
   if not AIsIO then
   begin
     case AAddress of
-      $0000..$1fff:
+      $0000..$3fff:
         Assert(False);
-      $2000..$27ff:
-        FRam1[AAddress-$2000]:=AValue;
-      $3000..$37ff:
-        FRam2[AAddress-$3000]:=AValue;
-      $4000:
-      begin
-        FDACValue:=(FDACValue and $fc00) or (Integer(AValue xor $ff) shl 2) or $03;
-        UpdateCVs;
-      end;
-      $4001:
-      begin
-        FDACValue:=(FDACValue and $03ff) or ((Integer(AValue xor $ff) and $3f) shl 10);
-        UpdateCVs;
-      end;
+      $4000..$67ff:
+        FRam[AAddress-$4000]:=AValue;
+      //TODO:
+      //$4000:
+      //begin
+      //  FDACValue:=(FDACValue and $fc00) or (Integer(AValue xor $ff) shl 2) or $03;
+      //  UpdateCVs;
+      //end;
+      //$4001:
+      //begin
+      //  FDACValue:=(FDACValue and $03ff) or ((Integer(AValue xor $ff) and $3f) shl 10);
+      //  UpdateCVs;
+      //end;
     end;
   end
   else
   begin
-    if AAddress and $08 <> 0 then
+    if AAddress and $10 <> 0 then
     begin
       // U322
       FIOCSData[AAddress and $07]:=AValue;
@@ -629,24 +398,14 @@ begin
         end;
         $06:
         begin
-//          debugln(['W ',Ord(AIsIO),' ',hexStr(AAddress,4),' ',hexStr(AValue,2),' (',AValue,')']);
 
-          // tune
-          F8253.SetGate(2,AValue and $02 <> 0); // Cntr En
-
-          FFFD:=AValue and $08 <> 0; // FF D
-          FFFP:=AValue and $01 <> 0; // -FF P
-          FFFCL:=AValue and $10 <> 0; // -FF CL
-
-          UpdateFFStatus(False);
         end;
       end;
     end
 
     else
     begin
-      // 8253 timer
-      F8253.WriteReg(AAddress and $03,AValue);
+
     end;
   end;
 end;
@@ -659,30 +418,24 @@ begin
   if not AIsIO then
   begin
     case AAddress of
-      $0000..$1fff:
+      $0000..$3fff:
         Result:=FRom[AAddress];
-      $2000..$27ff:
-        Result:=FRam1[AAddress-$2000];
-      $3000..$37ff:
-        Result:=FRam2[AAddress-$3000];
+      $4000..$67ff:
+        Result:=FRam[AAddress-$4000];
     end;
   end
   else
   begin
-    if AAddress and $08 <> 0 then
+    if AAddress and $10 <> 0 then
     begin
-      if AAddress and $03 = $01 then // CSI0 (misc driver)
+      if AAddress and $07 = $05 then // CSI0 (misc driver)
       begin
         Result:=0;
-        if FFFStatus then
-          Result:=Result or $02;
-        if F8253.GetOutput(2) then
-          Result:=Result or $04;
         if ADCCompare then
-          Result:=Result or $08;
+          Result:=Result or $80;
 //        debugln(['R ',Ord(AIsIO),' ',hexStr(AAddress,4),' ',hexStr(Result,2),' (',Result,')']);
       end
-      else if AAddress and $03 = $02 then // CSI1 (switch matrix)
+      else if AAddress and $07 = $02 then // CSI1 (switch matrix)
       begin
         bIdx:=(FIOCSData[0] and $0f)*8;
         Result:=0;
@@ -692,8 +445,7 @@ begin
     end
     else
     begin
-      // 8253 timer
-      Result:=F8253.ReadReg(AAddress and $03);
+
     end;
   end;
 
@@ -709,23 +461,15 @@ begin
 
     // find highest pitched osc
   cvV:=0;
-  cvHi:=pcMVol; // dummy
+  cvHi:=pcShape1; // dummy
   for i:=0 to 5 do
   begin
-    cvAmp:=TP600CV(Ord(pcAmp1)+i);
+    cvAmp:=TP600CV(Ord(pcAmp6)+i);
     if CVValues[cvAmp]=0 then
       Continue;
 
-    // osc A
-    cv:=TP600CV(Ord(pcOsc1A)+i);
-    if CVValues[cv]>cvV then
-    begin
-      cvHi:=cv;
-      cvV:=CVValues[cv];
-    end;
-
-    // osc B
-    cv:=TP600CV(Ord(pcOsc1B)+i);
+    // osc
+    cv:=TP600CV(Ord(pcOsc6)+i);
     if CVValues[cv]>cvV then
     begin
       cvHi:=cv;
@@ -733,9 +477,9 @@ begin
     end;
 
     // filter self oscillation
-    if CVValues[pcRes]>60000 then
+    if CVValues[pcRes6]>60000 then
     begin
-      cv:=TP600CV(Ord(pcFil1)+i);
+      cv:=TP600CV(Ord(pcFil6)+i);
       if CVValues[cv]>cvV then
       begin
         cvHi:=cv;
@@ -744,7 +488,7 @@ begin
     end;
   end;
 
-  if cvHi<>pcMVol then
+  if cvHi<>pcShape1 then
   begin
       // compute cycles per ACount ticks
     ratio:=ACount / CZ80Frequency;
@@ -753,15 +497,7 @@ begin
     FIncompleteCycles:=FIncompleteCycles-cycles;
 
     Assert(cycles in [0,1]); // quantum is too big if this fails
-
-    if cycles<>0 then
-      UpdateFFStatus(True);
   end;
-
-  // timer 1 runs at 2Mhz and is gated by timer 2 output
-
-  F8253.SetGate(1,not F8253.GetOutput(2));
-  F8253.RunCycles(1,ACount div 2);
 end;
 
 end.
