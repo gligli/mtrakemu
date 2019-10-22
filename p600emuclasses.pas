@@ -31,7 +31,7 @@ type
   );
 
   TP600Gate=(
-    pgChorusOn=0,pgAudioEnable
+    pgChorusOn=0,pgAudioEnable,pgCntIntMask
   );
 
   TP600Button=(
@@ -49,6 +49,10 @@ type
   TProphet600Hardware=record
   private
     FIOCSData:array[0..7] of Byte;
+
+    FPICPhase, FPICCtr, FPICPre: Integer;
+    F7MsPhase, F7MsPre: Integer;
+    F7MsInt: Boolean;
 
     FDACValue:Word;
     FSHAD,FSHEnable:Byte;
@@ -269,6 +273,8 @@ begin
       Result:= FIOCSData[4] and $01 <> 0;
     pgAudioEnable:
       Result:= FIOCSData[4] and $02 <> 0;
+    pgCntIntMask:
+      Result:= FIOCSData[4] and $08 <> 0;
   end;
 end;
 
@@ -397,26 +403,41 @@ begin
     else
     begin
       // DAC S&H
-      case AAddress and $03 of
-        $0:
+      case AAddress and $0f of
+        0:
         begin
           FDACValue:=(FDACValue and $0fc0) or (Integer(AValue xor $ff) shr 2);
           UpdateCVs;
         end;
-        $1:
+        1:
         begin
           FDACValue:=(FDACValue and $003f) or ((Integer(AValue xor $ff) and $3f) shl 6);
           UpdateCVs;
         end;
-        $2:
+        2:
         begin
           FSHAD := AValue;
           UpdateCVs;
         end;
-        $3:
+        3:
         begin
           FSHEnable := AValue;
           UpdateCVs;
+        end;
+        4..7:
+        begin
+          FPICPre := AValue;
+        end;
+
+        $e:
+        begin
+          F7MsPhase := 0;
+          F7MsInt := False;
+          F7MsPre := (F7MsPre and $ff00) or Integer(AValue);
+        end;
+        $f:
+        begin
+          F7MsPre := (F7MsPre and $00ff) or (Integer(AValue) shr 8);
         end;
       end;
     end;
@@ -450,6 +471,8 @@ begin
         Result:=$05;
         if ADCCompare then
           Result:=Result or $80;
+        if FPICCtr <= 0 then
+          Result:=Result or $02;
       end
       else if AAddress and $07 = $01 then // /SWITCH_IN
       begin
@@ -461,7 +484,12 @@ begin
     end
     else
     begin
-
+      case AAddress and $0f of
+        4..7:
+        begin
+          FPICCtr := FPICPre;
+        end;
+      end;
     end;
   end;
 end;
@@ -471,7 +499,34 @@ var cv,cvAmp,cvHi:TP600CV;
     cvV:Word;
     i,cycles:Integer;
     ratio:Double;
+    irq: Boolean;
 begin
+  // 7ms interrupt timer
+
+  F7MsPhase += ACount;
+  if F7MsPhase >= F7MsPre then
+  begin
+    F7MsPhase -= F7MsPre;
+    F7MsInt := True;
+  end;
+
+  // programmable interrupt counter
+
+  FPICPhase += ACount;
+  if FPICPhase >= 4 * 256 then
+  begin
+    FPICPhase -= 4 * 256;
+    FPICCtr -= 1;
+  end;
+
+  // int handling
+
+  irq := (F7MsInt and ((FIOCSData[5] and 1) <> 0)) or ((FPICCtr <= 0) and ((FIOCSData[4] and 8) <> 0));
+  if irq then
+    z80_raise_IRQ($38)
+  else
+    z80_lower_IRQ;
+
   // timer 2 runs at audio output frequency
 
     // find highest pitched osc
