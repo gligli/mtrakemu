@@ -1501,7 +1501,7 @@ object MainForm: TMainForm
       TabOrder = 29
     end
     object btRecord: TToggleBox
-      Tag = 67
+      Tag = 68
       Left = 236
       Height = 25
       Top = 147
@@ -1978,7 +1978,7 @@ object MainForm: TMainForm
   end
   object tiTick: TTimer
     Enabled = False
-    Interval = 50
+    Interval = 40
     OnTimer = tiTickTimer
     left = 24
     top = 48

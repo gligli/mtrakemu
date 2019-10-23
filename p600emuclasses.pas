@@ -8,22 +8,20 @@ uses
   Classes, SysUtils, raze, LazLogger, math, windows;
 
 const
-  cTickMilliseconds=7;
+  cTickMilliseconds=1;
   cZ80Frequency=4000000;
   cZ80CyclesPerTick=(cZ80Frequency div 1000) * cTickMilliseconds;
   cEmulationQuantum=4;
 
   cP600VoiceCount = 6;
-  cDisplayTimeout = 80000;
+  cDisplayTimeout = 40000;
 
 type
-  TP600Pot=(ppTune=0,ppValue,ppSpeed,ppTrkVol,ppMod,ppPitch,ppDACP,ppDACM);
+  TP600Pot=(ppDACM,ppTrkVol,ppDACP,ppSpeed,ppPitch,ppValue,ppMod,ppTune);
 
   TP600LED=(
-    pl0=$10,pl1=$11,pl2=$12,pl3=$13,pl4=$14,pl5=$15,pl6=$16,pl7=$17,
-    pl8=$18,pl9=$19,plA=$1A,plB=$1b,plC=$1c,plD=$1d,plPrmEd=$1e,plPrgRec=$1f,
-    plT1=$20,plT2=$21,plT3=$22,plT4=$23,plT5=$24,plT6=$25,plStack=$26,plRecord=$27,
-    plSA=$28,plSB=$29,plSC=$2a,plSD=$2b,plUD=$2c,plAssign=$2d,plAppend=$2e,plChorus=$2f
+    pl0,pl1,pl2,pl3,pl4,pl5,pl6,pl7,pl8,pl9,plA,plB,plC,plD,plPrmEd,plPrgRec,
+    plT1,plT2,plT3,plT4,plT5,plT6,plStack,plRecord,plSA,plSB,plSC,plSD,plUD,plAssign,plAppend,plChorus
   );
   TP600LEDStates=set of TP600LED;
 
@@ -57,7 +55,9 @@ type
     FIOCSData:array[0..7] of Byte;
 
     FCountDone: Boolean;
-    FPICPhase, FPICCtr, FPICPre: Integer;
+    FPICPhase: Integer;
+    FPICCtr, FPICPre: Byte;
+    FPICCntComp: Boolean;
     F7MsPhase, F7MsPre: Integer;
     F7MsInt: Boolean;
 
@@ -245,9 +245,7 @@ end;
 
 function TProphet600Hardware.ADCCompare: Boolean;
 begin
-  Result := False;
-  if (FSHAD shr 5) >= 2 then
-    Result:=Integer(FPotValues[TP600Pot((FSHAD shr 5) - 2)] shr 4) > FDACValue;
+  Result:=Integer(FPotValues[TP600Pot(FSHAD shr 5)] shr 4) > (4095 - FDACValue);
 end;
 
 procedure TProphet600Hardware.UpdateCVs;
@@ -258,14 +256,14 @@ begin
   reg:=FSHAD and $7;
 
   dv := 65535;
-  if (FSHAD shr 5) = 0 then
+  if TP600Pot(FSHAD shr 5) = ppDACM then
     dv := 4095 - FDACValue
-  else if (FSHAD shr 5) = 1 then
+  else if TP600Pot(FSHAD shr 5) = ppDACP then
     dv := FDACValue;
 
   for i := 0 to cP600VoiceCount - 1 do
     if (FSHEnable and (1 shl i)) <> 0 then
-      FCVValues[TP600CV(reg+(i shl 3))] := dv;
+      FCVValues[TP600CV(reg + (i shl 3))] := dv;
 end;
 
 function TProphet600Hardware.GetCVHertz(ACV: TP600CV): Double;
@@ -277,13 +275,13 @@ function TProphet600Hardware.GetGateValues(AGate: TP600Gate): Boolean;
 begin
   case AGate of
     pgChorusOn:
-      Result:= FIOCSData[4] and $01 <> 0;
+      Result := FIOCSData[4] and $01 <> 0;
     pgAudioEnable:
-      Result:= FIOCSData[4] and $02 <> 0;
+      Result := FIOCSData[4] and $02 <> 0;
     pgToTape:
-      Result:= FIOCSData[4] and $04 <> 0;
+      Result := FIOCSData[4] and $04 <> 0;
     pgCntIntMask:
-      Result:= FIOCSData[4] and $08 <> 0;
+      Result := FIOCSData[4] and $08 <> 0;
   end;
 end;
 
@@ -307,7 +305,7 @@ end;
 
 function TProphet600Hardware.GetSevenSegment(AIndex: Integer): Byte;
 begin
-  Result:=(FDisplay[AIndex] or FOldDisplay[AIndex]) and $ff;
+  Result:=FDisplay[AIndex] or FOldDisplay[AIndex];
 end;
 
 procedure TProphet600Hardware.SetButtonStates(AButton: TP600Button;
@@ -323,7 +321,7 @@ end;
 
 procedure TProphet600Hardware.Initialize;
 begin
-  FillChar(FRam[0], SizeOf(FRam), $ff);
+  FillChar(FRam[0], SizeOf(FRam), $0);
 
   FillChar(FOldDisplay[0], SizeOf(FOldDisplay), 0);
   FillChar(FDisplay[0], SizeOf(FDisplay), 0);
@@ -331,6 +329,8 @@ begin
 
   FillChar(FCVValues[pcOsc6], SizeOf(FCVValues), 0);
   FillChar(FKeyStates[0], SizeOf(FKeyStates), 0);
+
+  ButtonStates[pbTP] := True;
 end;
 
 procedure TProphet600Hardware.LoadRomFromFile(AFileName: String);
@@ -357,17 +357,6 @@ begin
         Assert(False);
       $4000..$67ff:
         FRam[AAddress-$4000]:=AValue;
-      //TODO:
-      //$4000:
-      //begin
-      //  FDACValue:=(FDACValue and $fc00) or (Integer(AValue xor $ff) shl 2) or $03;
-      //  UpdateCVs;
-      //end;
-      //$4001:
-      //begin
-      //  FDACValue:=(FDACValue and $03ff) or ((Integer(AValue xor $ff) and $3f) shl 10);
-      //  UpdateCVs;
-      //end;
     end;
   end
   else
@@ -390,8 +379,8 @@ begin
           for i := 0 to High(FDisplay) do
             if (lh and (1 shl i)) <> 0 then
             begin
-              //FOldDisplay[i] := FDisplay[i];
               FDisplayTimeout[i] := cDisplayTimeout;
+              FOldDisplay[i] := FDisplay[i];
               FDisplay[i] := lv;
             end;
         end;
@@ -431,13 +420,14 @@ begin
         end;
         $e:
         begin
-          F7MsPhase := 0;
           F7MsInt := False;
           F7MsPre := (F7MsPre and $ff00) or Integer(AValue);
+          F7MsPhase := F7MsPre;
         end;
         $f:
         begin
           F7MsPre := (F7MsPre and $00ff) or (Integer(AValue) shl 8);
+          F7MsPhase := F7MsPre;
         end;
       end;
     end;
@@ -468,18 +458,18 @@ begin
     begin
       if AAddress and $07 = $05 then // /MISC_IN
       begin
-        Result:=$05;
+        Result := $05;
         if ADCCompare then
-          Result:=Result or $80;
-        if FPICCtr <= 0 then
-          Result:=Result or $02;
+          Result := Result or $80;
+        if FPICCntComp then
+          Result := Result or $02;
       end
       else if AAddress and $07 = $01 then // /SWITCH_IN
       begin
-        bIdx:=(FIOCSData[0] shr 5) * 16;
-        Result:=$80;
-        for i:=0 to 4 do
-          Result:=Result or (ifthen(FKeyStates[i+bIdx],1,0) shl i);
+        bIdx := (FIOCSData[0] shr 5) * 16;
+        Result := $80;
+        for i := 0 to 4 do
+          Result := Result or (ifthen(FKeyStates[i + bIdx], 1, 0) shl i);
       end;
     end
     else
@@ -503,7 +493,6 @@ var cv,cvAmp,cvHi:TP600CV;
     cvV:Word;
     i,cycles:Integer;
     ratio:Double;
-    irq: Boolean;
 begin
   // display remanance handling
 
@@ -511,15 +500,15 @@ begin
   begin
     FDisplayTimeout[i] -= ACount;
     if FDisplayTimeout[i] < 0 then
-      FOldDisplay[i] := FDisplay[i];
+      FOldDisplay[i] := 0;
   end;
 
   // 7ms interrupt timer
 
   F7MsPhase += ACount;
-  if F7MsPhase >= F7MsPre then
+  if F7MsPhase >= 65536 then
   begin
-    F7MsPhase -= F7MsPre;
+    F7MsPhase := Low(Integer);
     F7MsInt := True;
   end;
 
@@ -529,17 +518,17 @@ begin
   if FPICPhase >= 4 * 256 then
   begin
     FPICPhase -= 4 * 256;
-    FPICCtr -= 1;
+    FPICCtr := (FPICCtr - 1) and $ff;
   end;
+
+  FPICCntComp := (FPICCtr = 255) and ((FIOCSData[4] and 8) <> 0);
 
   // int handling
 
-  irq := F7MsInt or ((FPICCtr <= 0) and ((FIOCSData[4] and 8) <> 0));
-  if irq then
-  begin
-    z80_raise_IRQ($ff);
+  if F7MsInt or FPICCntComp then
+    z80_raise_IRQ($38)
+  else
     z80_lower_IRQ;
-  end;
 
   // timer 2 runs at audio output frequency
 
