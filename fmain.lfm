@@ -6,6 +6,7 @@ object MainForm: TMainForm
   Caption = 'Prophet 600 emulator'
   ClientHeight = 522
   ClientWidth = 1088
+  DoubleBuffered = False
   Font.CharSet = ANSI_CHARSET
   Font.Height = -11
   Font.Name = 'Tahoma'
@@ -13,6 +14,7 @@ object MainForm: TMainForm
   Font.Quality = fqDraft
   OnCreate = FormCreate
   OnDestroy = FormDestroy
+  ParentDoubleBuffered = False
   LCLVersion = '2.0.4.0'
   WindowState = wsMaximized
   object lvCV: TListView
@@ -45,7 +47,6 @@ object MainForm: TMainForm
     GridLines = True
     OwnerData = True
     ReadOnly = True
-    RowSelect = True
     TabOrder = 0
     ViewStyle = vsReport
     OnData = lvCVData
@@ -1953,7 +1954,6 @@ object MainForm: TMainForm
     GridLines = True
     OwnerData = True
     ReadOnly = True
-    RowSelect = True
     TabOrder = 4
     ViewStyle = vsReport
     OnData = lvGatesData
@@ -1978,7 +1978,7 @@ object MainForm: TMainForm
   end
   object tiTick: TTimer
     Enabled = False
-    Interval = 40
+    Interval = 50
     OnTimer = tiTickTimer
     left = 24
     top = 48

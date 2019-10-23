@@ -8,18 +8,20 @@ uses
   Classes, SysUtils, raze, LazLogger, math, windows;
 
 const
-  cTickMilliseconds=1;
+  cTickMilliseconds=7;
   cZ80Frequency=4000000;
   cZ80CyclesPerTick=(cZ80Frequency div 1000) * cTickMilliseconds;
   cEmulationQuantum=4;
 
   cP600VoiceCount = 6;
-  cDisplayTimeout = 40000;
+  cDisplayTimeout = 100000;
 
 type
   TP600Pot=(ppDACM,ppTrkVol,ppDACP,ppSpeed,ppPitch,ppValue,ppMod,ppTune);
 
   TP600LED=(
+    plA1,plB1,plC1,plD1,plE1,plF1,plG1,plDP1,
+    plA2,plB2,plC2,plD2,plE2,plF2,plG2,plDP2,
     pl0,pl1,pl2,pl3,pl4,pl5,pl6,pl7,pl8,pl9,plA,plB,plC,plD,plPrmEd,plPrgRec,
     plT1,plT2,plT3,plT4,plT5,plT6,plStack,plRecord,plSA,plSB,plSC,plSD,plUD,plAssign,plAppend,plChorus
   );
@@ -35,7 +37,7 @@ type
   );
 
   TP600Gate=(
-    pgChorusOn=0,pgAudioEnable,pgToTape,pgCntIntMask
+    pgChorusOn=0,pgAudioEnable,pgFromTape,pgCntIntMask
   );
 
   TP600Button=(
@@ -52,9 +54,13 @@ type
 
   TProphet600Hardware=record
   private
+    FCurTick: Integer;
+
     FIOCSData:array[0..7] of Byte;
 
-    FCountDone: Boolean;
+    FTuneCntLo, FTuneCntHi: Integer;
+    FTuneCntDone: Boolean;
+
     FPICPhase: Integer;
     FPICCtr, FPICPre: Byte;
     FPICCntComp: Boolean;
@@ -69,19 +75,15 @@ type
     FRom:array[0..16*1024-1] of Byte;
     FRam:array[0..10*1024-1] of Byte;
     FPotValues:array[TP600Pot] of Word;
-
-    FDisplayTimeout:array[0..5] of Integer;
-    FOldDisplay:array[0..5] of Byte;
-    FDisplay:array[0..5] of Byte;
-
-    FCVValues:array[TP600CV] of Word;
+    FDisplay:array[TP600LED] of Integer;
+    FCVValues:array[TP600CV] of Integer;
     FKeyStates:array[0..127] of Boolean;
 
     function ADCCompare:Boolean;
     procedure UpdateCVs;
 
     // getters/setters
-    function GetCVValues(ACV: TP600CV): Word;
+    function GetCVValues(ACV: TP600CV): Integer;
     function GetCVVolts(ACV: TP600CV): Double;
     function GetCVHertz(ACV: TP600CV): Double;
     function GetGateValues(AGate: TP600Gate): Boolean;
@@ -105,7 +107,7 @@ type
 
     property ButtonStates[AButton:TP600Button]:Boolean write SetButtonStates;
 
-    property CVValues[ACV:TP600CV]:Word read GetCVValues;
+    property CVValues[ACV:TP600CV]:Integer read GetCVValues;
     property CVVolts[ACV:TP600CV]:Double read GetCVVolts;
     property CVHertz[ACV:TP600CV]:Double read GetCVHertz;
     property GateValues[AGate:TP600Gate]:Boolean read GetGateValues;
@@ -197,50 +199,13 @@ end;
 { TProphet600Hardware }
 
 function TProphet600Hardware.GetLEDStates: TP600LEDStates;
-var v2,v3,v4,v5:Byte;
+var
+  l: TP600LED;
 begin
   Result:=[];
-
-  v2:=FDisplay[2] or FOldDisplay[2];
-  v3:=FDisplay[3] or FOldDisplay[3];
-  v4:=FDisplay[4] or FOldDisplay[4];
-  v5:=FDisplay[5] or FOldDisplay[5];
-
-  if v2 and $01 <> 0 then Result:=Result + [pl0];
-  if v2 and $02 <> 0 then Result:=Result + [pl1];
-  if v2 and $04 <> 0 then Result:=Result + [pl2];
-  if v2 and $08 <> 0 then Result:=Result + [pl3];
-  if v2 and $10 <> 0 then Result:=Result + [pl4];
-  if v2 and $20 <> 0 then Result:=Result + [pl5];
-  if v2 and $40 <> 0 then Result:=Result + [pl6];
-  if v2 and $80 <> 0 then Result:=Result + [pl7];
-
-  if v3 and $01 <> 0 then Result:=Result + [pl8];
-  if v3 and $02 <> 0 then Result:=Result + [pl9];
-  if v3 and $04 <> 0 then Result:=Result + [plA];
-  if v3 and $08 <> 0 then Result:=Result + [plB];
-  if v3 and $10 <> 0 then Result:=Result + [plC];
-  if v3 and $20 <> 0 then Result:=Result + [plD];
-  if v3 and $40 <> 0 then Result:=Result + [plPrgRec];
-  if v3 and $80 <> 0 then Result:=Result + [plPrmEd];
-
-  if v4 and $01 <> 0 then Result:=Result + [plT1];
-  if v4 and $02 <> 0 then Result:=Result + [plT2];
-  if v4 and $04 <> 0 then Result:=Result + [plT3];
-  if v4 and $08 <> 0 then Result:=Result + [plT4];
-  if v4 and $10 <> 0 then Result:=Result + [plT5];
-  if v4 and $20 <> 0 then Result:=Result + [plT6];
-  if v4 and $40 <> 0 then Result:=Result + [plStack];
-  if v4 and $80 <> 0 then Result:=Result + [plRecord];
-
-  if v5 and $01 <> 0 then Result:=Result + [plSA];
-  if v5 and $02 <> 0 then Result:=Result + [plSB];
-  if v5 and $04 <> 0 then Result:=Result + [plSC];
-  if v5 and $08 <> 0 then Result:=Result + [plSD];
-  if v5 and $10 <> 0 then Result:=Result + [plUD];
-  if v5 and $20 <> 0 then Result:=Result + [plAssign];
-  if v5 and $40 <> 0 then Result:=Result + [plAppend];
-  if v5 and $80 <> 0 then Result:=Result + [plChorus];
+  for l := Low(TP600LED) to High(TP600LED) do
+    if FDisplay[l] > 0 then
+      Result:=Result + [l];
 end;
 
 function TProphet600Hardware.ADCCompare: Boolean;
@@ -250,42 +215,42 @@ end;
 
 procedure TProphet600Hardware.UpdateCVs;
 var reg:Byte;
-    dv: Word;
+    dv: Integer;
     i: Integer;
 begin
   reg:=FSHAD and $7;
 
-  dv := 65535;
+  dv := 65536;
   if TP600Pot(FSHAD shr 5) = ppDACM then
-    dv := 4095 - FDACValue
+    dv := (4095 - FDACValue)
   else if TP600Pot(FSHAD shr 5) = ppDACP then
-    dv := FDACValue;
+    dv := -(4095 - FDACValue);
 
   for i := 0 to cP600VoiceCount - 1 do
-    if (FSHEnable and (1 shl i)) <> 0 then
+    if (FSHEnable and (1 shl i)) = 0 then
       FCVValues[TP600CV(reg + (i shl 3))] := dv;
 end;
 
 function TProphet600Hardware.GetCVHertz(ACV: TP600CV): Double;
 begin
-  Result:=(27.5)*power(2.0,CVVolts[ACV]/0.4);
+  Result:=13.75*power(2.0,(CVVolts[ACV]+4.0)/8.0*10.5);
 end;
 
 function TProphet600Hardware.GetGateValues(AGate: TP600Gate): Boolean;
 begin
   case AGate of
     pgChorusOn:
-      Result := FIOCSData[4] and $01 <> 0;
+      Result := FIOCSData[4] and $01 = 0;
     pgAudioEnable:
-      Result := FIOCSData[4] and $02 <> 0;
-    pgToTape:
-      Result := FIOCSData[4] and $04 <> 0;
+      Result := FIOCSData[4] and $02 = 0;
+    pgFromTape:
+      Result := FIOCSData[4] and $04 = 0;
     pgCntIntMask:
-      Result := FIOCSData[4] and $08 <> 0;
+      Result := FIOCSData[4] and $08 = 0;
   end;
 end;
 
-function TProphet600Hardware.GetCVValues(ACV: TP600CV): Word;
+function TProphet600Hardware.GetCVValues(ACV: TP600CV): Integer;
 begin
   Result:=FCVValues[ACV];
 end;
@@ -293,7 +258,7 @@ end;
 function TProphet600Hardware.GetCVVolts(ACV: TP600CV): Double;
 begin
   if CVValues[ACV] > 4096 then
-    Result:=-1.0
+    Result:=-10.0
   else
     Result:=(CVValues[ACV] / 4095.0) * 4.0;
 end;
@@ -304,8 +269,12 @@ begin
 end;
 
 function TProphet600Hardware.GetSevenSegment(AIndex: Integer): Byte;
+var
+  i: Integer;
 begin
-  Result:=FDisplay[AIndex] or FOldDisplay[AIndex];
+  Result := 0;
+  for i := 0 to 7 do
+    Result := Result or (Ord(FDisplay[TP600LED(i + AIndex * 8)] > 0) shl i);
 end;
 
 procedure TProphet600Hardware.SetButtonStates(AButton: TP600Button;
@@ -321,12 +290,10 @@ end;
 
 procedure TProphet600Hardware.Initialize;
 begin
-  FillChar(FRam[0], SizeOf(FRam), $0);
+  FCurTick := 0;
 
-  FillChar(FOldDisplay[0], SizeOf(FOldDisplay), 0);
-  FillChar(FDisplay[0], SizeOf(FDisplay), 0);
-  FillChar(FDisplayTimeout[0], SizeOf(FDisplayTimeout), 0);
-
+  FillChar(FRam[0], SizeOf(FRam), $ff);
+  FillChar(FDisplay[plA1], SizeOf(FDisplay), 0);
   FillChar(FCVValues[pcOsc6], SizeOf(FCVValues), 0);
   FillChar(FKeyStates[0], SizeOf(FKeyStates), 0);
 
@@ -347,16 +314,18 @@ end;
 
 procedure TProphet600Hardware.Write(AIsIO: Boolean; AAddress: Word; AValue: Byte);
 var
-  i: Integer;
+  i, j: Integer;
   lv,lh: Byte;
 begin
   if not AIsIO then
   begin
+    AAddress := AAddress and $7fff;
+
     case AAddress of
       $0000..$3fff:
         Assert(False);
       $4000..$67ff:
-        FRam[AAddress-$4000]:=AValue;
+        FRam[AAddress and $3fff] := AValue;
     end;
   end
   else
@@ -376,13 +345,18 @@ begin
           // display
           lv := FIOCSData[2];
           lh := FIOCSData[3];
-          for i := 0 to High(FDisplay) do
+          for i := 0 to 5 do
             if (lh and (1 shl i)) <> 0 then
-            begin
-              FDisplayTimeout[i] := cDisplayTimeout;
-              FOldDisplay[i] := FDisplay[i];
-              FDisplay[i] := lv;
-            end;
+              for j := 0 to 7 do
+                if lv and (1 shl j) <> 0 then
+                  FDisplay[TP600LED(j + i * 8)] += cDisplayTimeout
+                else
+                  FDisplay[TP600LED(j + i * 8)] := 0;
+        end;
+        4:
+        begin
+          // misc out
+          FPICCntComp := FPICCntComp or ((AValue and 8) = 0);
         end;
       end;
     end
@@ -413,10 +387,13 @@ begin
         4..7:
         begin
           FPICPre := AValue;
+          FPICCtr := FPICPre;
         end;
         8:
         begin
-          FCountDone := False;
+          FTuneCntLo := Integer(AValue and $1f or $01);
+          FTuneCntHi := 0;
+          FTuneCntDone := False;
         end;
         $e:
         begin
@@ -426,6 +403,7 @@ begin
         end;
         $f:
         begin
+          F7MsInt := False;
           F7MsPre := (F7MsPre and $00ff) or (Integer(AValue) shl 8);
           F7MsPhase := F7MsPre;
         end;
@@ -441,11 +419,13 @@ begin
 
   if not AIsIO then
   begin
-    case AAddress of
+    AAddress := AAddress and $7fff;
+
+    case AAddress and $7fff of
       $0000..$3fff:
-        Result:=FRom[AAddress];
+        Result := FRom[AAddress];
       $4000..$67ff:
-        Result:=FRam[AAddress-$4000];
+        Result := FRam[AAddress and $3fff];
     end;
   end
   else
@@ -467,7 +447,7 @@ begin
       else if AAddress and $07 = $01 then // /SWITCH_IN
       begin
         bIdx := (FIOCSData[0] shr 5) * 16;
-        Result := $80;
+        Result := $e0;
         for i := 0 to 4 do
           Result := Result or (ifthen(FKeyStates[i + bIdx], 1, 0) shl i);
       end;
@@ -477,11 +457,19 @@ begin
       case AAddress and $0f of
         4..7:
         begin
-          FPICCtr := FPICPre;
+          FPICCntComp := False;
+        end;
+        $a:
+        begin
+          Result := (FTuneCntHi shr 1) and $ff;
+        end;
+        $b:
+        begin
+          Result := (FTuneCntHi shr 9) and $ff;
         end;
         $c:
         begin
-          Result := Ord(FCountDone);
+          Result := Ord(FTuneCntDone);
         end;
       end;
     end;
@@ -491,17 +479,71 @@ end;
 procedure TProphet600Hardware.RunCycles(ACount: Integer);
 var cv,cvAmp,cvHi:TP600CV;
     cvV:Word;
-    i,cycles:Integer;
+    i, cycles:Integer;
     ratio:Double;
+    l: TP600LED;
 begin
+  FCurTick += ACount;
+
   // display remanance handling
 
-  for i := 0 to High(FDisplay) do
+  for l := Low(l) to High(l) do
   begin
-    FDisplayTimeout[i] -= ACount;
-    if FDisplayTimeout[i] < 0 then
-      FOldDisplay[i] := 0;
+    if (FIOCSData[3] and (1 shl (Ord(l) shr 3))) <> 0 then
+      Continue;
+
+    FDisplay[l] -= ACount;
+    if FDisplay[l] < 0 then
+      FDisplay[l] := 0;
   end;
+
+  // tune counter
+
+    // find highest pitched osc
+  cvV:=0;
+  cvHi:=pcShape1; // dummy
+  for i:=0 to cP600VoiceCount - 1 do
+  begin
+    cvAmp:=TP600CV(Ord(pcAmp6)+i*abs(Ord(pcOsc5)-Ord(pcOsc6)));
+    if CVValues[cvAmp] < 1 * 4096 div 16 then
+      Continue;
+
+    // osc
+    cv:=TP600CV(Ord(pcOsc6)+i*abs(Ord(pcOsc5)-Ord(pcOsc6)));
+    if CVValues[cv]>cvV then
+    begin
+      cvHi:=cv;
+      cvV:=CVValues[cv];
+    end;
+
+    // filter self oscillation
+    if CVValues[pcRes6] > 15 * 4096 div 16 then
+    begin
+      cv:=TP600CV(Ord(pcFil6)+i*abs(Ord(pcOsc5)-Ord(pcOsc6)));
+      if CVValues[cv]>cvV then
+      begin
+        cvHi:=cv;
+        cvV:=CVValues[cv];
+      end;
+    end;
+  end;
+
+  if cvHi<>pcShape1 then
+  begin
+      // compute cycles per ACount ticks
+    ratio:=ACount / cZ80Frequency;
+    FIncompleteCycles:=FIncompleteCycles + CVHertz[cvHi] * ratio;
+    cycles:=Trunc(FIncompleteCycles);
+    FIncompleteCycles:=FIncompleteCycles-cycles;
+
+    Dec(FTuneCntLo, cycles);
+  end;
+
+  // SCI combo chip part
+
+  FTuneCntHi += ACount;
+  if FTuneCntLo <= 0 then
+    FTuneCntDone := True;
 
   // 7ms interrupt timer
 
@@ -521,7 +563,8 @@ begin
     FPICCtr := (FPICCtr - 1) and $ff;
   end;
 
-  FPICCntComp := (FPICCtr = 255) and ((FIOCSData[4] and 8) <> 0);
+  if (FPICCtr = 255) and ((FIOCSData[4] and 8) <> 0) then
+    FPICCntComp := True;
 
   // int handling
 
@@ -530,47 +573,6 @@ begin
   else
     z80_lower_IRQ;
 
-  // timer 2 runs at audio output frequency
-
-    // find highest pitched osc
-  cvV:=0;
-  cvHi:=pcShape1; // dummy
-  for i:=0 to cP600VoiceCount - 1 do
-  begin
-    cvAmp:=TP600CV(Ord(pcAmp6)+i*abs(Ord(pcOsc5)-Ord(pcOsc6)));
-    if CVValues[cvAmp]=0 then
-      Continue;
-
-    // osc
-    cv:=TP600CV(Ord(pcOsc6)+i*abs(Ord(pcOsc5)-Ord(pcOsc6)));
-    if CVValues[cv]>cvV then
-    begin
-      cvHi:=cv;
-      cvV:=CVValues[cv];
-    end;
-
-    // filter self oscillation
-    if CVValues[pcRes6]>60000 then
-    begin
-      cv:=TP600CV(Ord(pcFil6)+i*abs(Ord(pcOsc5)-Ord(pcOsc6)));
-      if CVValues[cv]>cvV then
-      begin
-        cvHi:=cv;
-        cvV:=CVValues[cv];
-      end;
-    end;
-  end;
-
-  if cvHi<>pcShape1 then
-  begin
-      // compute cycles per ACount ticks
-    ratio:=ACount / cZ80Frequency;
-    FIncompleteCycles:=FIncompleteCycles + CVHertz[cvHi] * ratio;
-    cycles:=Trunc(FIncompleteCycles);
-    FIncompleteCycles:=FIncompleteCycles-cycles;
-
-    Assert(cycles in [0,1]); // quantum is too big if this fails
-  end;
 end;
 
 end.
