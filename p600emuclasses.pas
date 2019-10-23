@@ -8,7 +8,13 @@ uses
   Classes, SysUtils, raze, LazLogger, math, windows;
 
 const
+  cTickMilliseconds=7;
+  cZ80Frequency=4000000;
+  cZ80CyclesPerTick=(cZ80Frequency div 1000) * cTickMilliseconds;
+  cEmulationQuantum=4;
+
   cP600VoiceCount = 6;
+  cDisplayTimeout = 80000;
 
 type
   TP600Pot=(ppTune=0,ppValue,ppSpeed,ppTrkVol,ppMod,ppPitch,ppDACP,ppDACM);
@@ -31,7 +37,7 @@ type
   );
 
   TP600Gate=(
-    pgChorusOn=0,pgAudioEnable,pgCntIntMask
+    pgChorusOn=0,pgAudioEnable,pgToTape,pgCntIntMask
   );
 
   TP600Button=(
@@ -50,6 +56,7 @@ type
   private
     FIOCSData:array[0..7] of Byte;
 
+    FCountDone: Boolean;
     FPICPhase, FPICCtr, FPICPre: Integer;
     F7MsPhase, F7MsPre: Integer;
     F7MsInt: Boolean;
@@ -62,8 +69,11 @@ type
     FRom:array[0..16*1024-1] of Byte;
     FRam:array[0..10*1024-1] of Byte;
     FPotValues:array[TP600Pot] of Word;
+
+    FDisplayTimeout:array[0..5] of Integer;
     FOldDisplay:array[0..5] of Byte;
     FDisplay:array[0..5] of Byte;
+
     FCVValues:array[TP600CV] of Word;
     FKeyStates:array[0..127] of Boolean;
 
@@ -118,15 +128,7 @@ type
 var
   P600Emu:TProphet600Emulator;
 
-const
-  CTickMilliseconds=5;
-
 implementation
-
-const
-  CZ80Frequency=4000000;
-  CZ80CyclesPerTick=(CZ80Frequency div 1000) * CTickMilliseconds;
-  CEmulationQuantum=4;
 
 procedure P600Emu_WriteMem(AAddress:Word;AValue:Byte);cdecl;
 begin
@@ -185,14 +187,11 @@ end;
 procedure TProphet600Emulator.Tick;
 var i:Integer;
 begin
-  for i:=0 to CZ80CyclesPerTick div CEmulationQuantum - 1 do
+  for i:=0 to cZ80CyclesPerTick div cEmulationQuantum - 1 do
   begin
-    z80_emulate(CEmulationQuantum);
-    HW.RunCycles(CEmulationQuantum);
+    z80_emulate(cEmulationQuantum);
+    HW.RunCycles(cEmulationQuantum);
   end;
-
-  z80_raise_IRQ($ff);
-  z80_lower_IRQ;
 end;
 
 { TProphet600Hardware }
@@ -247,23 +246,31 @@ end;
 function TProphet600Hardware.ADCCompare: Boolean;
 begin
   Result := False;
-  if (FSHAD shr 4) >= 2 then
-    Result:=Integer(FPotValues[TP600Pot(FSHAD shr 4)] shr 4) > (4095 - FDACValue);
+  if (FSHAD shr 5) >= 2 then
+    Result:=Integer(FPotValues[TP600Pot((FSHAD shr 5) - 2)] shr 4) > FDACValue;
 end;
 
 procedure TProphet600Hardware.UpdateCVs;
 var reg:Byte;
+    dv: Word;
     i: Integer;
 begin
   reg:=FSHAD and $7;
+
+  dv := 65535;
+  if (FSHAD shr 5) = 0 then
+    dv := 4095 - FDACValue
+  else if (FSHAD shr 5) = 1 then
+    dv := FDACValue;
+
   for i := 0 to cP600VoiceCount - 1 do
-    if FSHEnable and (1 shl i) <> 0 then
-      FCVValues[TP600CV(reg+(i shl 3))]:=(4095-FDACValue);
+    if (FSHEnable and (1 shl i)) <> 0 then
+      FCVValues[TP600CV(reg+(i shl 3))] := dv;
 end;
 
 function TProphet600Hardware.GetCVHertz(ACV: TP600CV): Double;
 begin
-  Result:=(27.5)*power(2.0,CVVolts[ACV]/0.5);
+  Result:=(27.5)*power(2.0,CVVolts[ACV]/0.4);
 end;
 
 function TProphet600Hardware.GetGateValues(AGate: TP600Gate): Boolean;
@@ -273,6 +280,8 @@ begin
       Result:= FIOCSData[4] and $01 <> 0;
     pgAudioEnable:
       Result:= FIOCSData[4] and $02 <> 0;
+    pgToTape:
+      Result:= FIOCSData[4] and $04 <> 0;
     pgCntIntMask:
       Result:= FIOCSData[4] and $08 <> 0;
   end;
@@ -285,7 +294,10 @@ end;
 
 function TProphet600Hardware.GetCVVolts(ACV: TP600CV): Double;
 begin
-  Result:=(CVValues[ACV] / 4095.0) * 5.0;
+  if CVValues[ACV] > 4096 then
+    Result:=-1.0
+  else
+    Result:=(CVValues[ACV] / 4095.0) * 4.0;
 end;
 
 function TProphet600Hardware.GetPotValues(APot: TP600Pot): Word;
@@ -311,7 +323,14 @@ end;
 
 procedure TProphet600Hardware.Initialize;
 begin
+  FillChar(FRam[0], SizeOf(FRam), $ff);
 
+  FillChar(FOldDisplay[0], SizeOf(FOldDisplay), 0);
+  FillChar(FDisplay[0], SizeOf(FDisplay), 0);
+  FillChar(FDisplayTimeout[0], SizeOf(FDisplayTimeout), 0);
+
+  FillChar(FCVValues[pcOsc6], SizeOf(FCVValues), 0);
+  FillChar(FKeyStates[0], SizeOf(FKeyStates), 0);
 end;
 
 procedure TProphet600Hardware.LoadRomFromFile(AFileName: String);
@@ -328,6 +347,7 @@ end;
 
 procedure TProphet600Hardware.Write(AIsIO: Boolean; AAddress: Word; AValue: Byte);
 var
+  i: Integer;
   lv,lh: Byte;
 begin
   if not AIsIO then
@@ -362,41 +382,18 @@ begin
       FIOCSData[AAddress and $07]:=AValue;
 
       case AAddress and $07 of
-        $03:
+        3:
         begin
           // display
           lv := FIOCSData[2];
           lh := FIOCSData[3];
-          if lh and $01 <> 0 then
-          begin
-            FOldDisplay[0]:=FDisplay[0];
-            FDisplay[0]:=lv;
-          end;
-          if lh and $02 <> 0 then
-          begin
-            FOldDisplay[1]:=FDisplay[1];
-            FDisplay[1]:=lv;
-          end;
-          if lh and $04 <> 0 then
-          begin
-            FOldDisplay[2]:=FDisplay[2];
-            FDisplay[2]:=lv;
-          end;
-          if lh and $08 <> 0 then
-          begin
-            FOldDisplay[3]:=FDisplay[3];
-            FDisplay[3]:=lv;
-          end;
-          if lh and $10 <> 0 then
-          begin
-            FOldDisplay[4]:=FDisplay[4];
-            FDisplay[4]:=lv;
-          end;
-          if lh and $20 <> 0 then
-          begin
-            FOldDisplay[5]:=FDisplay[5];
-            FDisplay[5]:=lv;
-          end;
+          for i := 0 to High(FDisplay) do
+            if (lh and (1 shl i)) <> 0 then
+            begin
+              //FOldDisplay[i] := FDisplay[i];
+              FDisplayTimeout[i] := cDisplayTimeout;
+              FDisplay[i] := lv;
+            end;
         end;
       end;
     end
@@ -406,7 +403,7 @@ begin
       case AAddress and $0f of
         0:
         begin
-          FDACValue:=(FDACValue and $0fc0) or (Integer(AValue xor $ff) shr 2);
+          FDACValue:=(FDACValue and $0fc0) or ((Integer(AValue xor $ff) shr 2) and $3f);
           UpdateCVs;
         end;
         1:
@@ -428,7 +425,10 @@ begin
         begin
           FPICPre := AValue;
         end;
-
+        8:
+        begin
+          FCountDone := False;
+        end;
         $e:
         begin
           F7MsPhase := 0;
@@ -437,7 +437,7 @@ begin
         end;
         $f:
         begin
-          F7MsPre := (F7MsPre and $00ff) or (Integer(AValue) shr 8);
+          F7MsPre := (F7MsPre and $00ff) or (Integer(AValue) shl 8);
         end;
       end;
     end;
@@ -476,10 +476,10 @@ begin
       end
       else if AAddress and $07 = $01 then // /SWITCH_IN
       begin
-        bIdx:=FIOCSData[0] * 16;
+        bIdx:=(FIOCSData[0] shr 5) * 16;
         Result:=$80;
         for i:=0 to 4 do
-          Result:=Result or (ifthen(FKeyStates[i+bIdx],0,1) shl i);
+          Result:=Result or (ifthen(FKeyStates[i+bIdx],1,0) shl i);
       end;
     end
     else
@@ -488,6 +488,10 @@ begin
         4..7:
         begin
           FPICCtr := FPICPre;
+        end;
+        $c:
+        begin
+          Result := Ord(FCountDone);
         end;
       end;
     end;
@@ -501,6 +505,15 @@ var cv,cvAmp,cvHi:TP600CV;
     ratio:Double;
     irq: Boolean;
 begin
+  // display remanance handling
+
+  for i := 0 to High(FDisplay) do
+  begin
+    FDisplayTimeout[i] -= ACount;
+    if FDisplayTimeout[i] < 0 then
+      FOldDisplay[i] := FDisplay[i];
+  end;
+
   // 7ms interrupt timer
 
   F7MsPhase += ACount;
@@ -521,25 +534,26 @@ begin
 
   // int handling
 
-  irq := (F7MsInt and ((FIOCSData[5] and 1) <> 0)) or ((FPICCtr <= 0) and ((FIOCSData[4] and 8) <> 0));
+  irq := F7MsInt or ((FPICCtr <= 0) and ((FIOCSData[4] and 8) <> 0));
   if irq then
-    z80_raise_IRQ($38)
-  else
+  begin
+    z80_raise_IRQ($ff);
     z80_lower_IRQ;
+  end;
 
   // timer 2 runs at audio output frequency
 
     // find highest pitched osc
   cvV:=0;
   cvHi:=pcShape1; // dummy
-  for i:=0 to 5 do
+  for i:=0 to cP600VoiceCount - 1 do
   begin
-    cvAmp:=TP600CV(Ord(pcAmp6)+i);
+    cvAmp:=TP600CV(Ord(pcAmp6)+i*abs(Ord(pcOsc5)-Ord(pcOsc6)));
     if CVValues[cvAmp]=0 then
       Continue;
 
     // osc
-    cv:=TP600CV(Ord(pcOsc6)+i);
+    cv:=TP600CV(Ord(pcOsc6)+i*abs(Ord(pcOsc5)-Ord(pcOsc6)));
     if CVValues[cv]>cvV then
     begin
       cvHi:=cv;
@@ -549,7 +563,7 @@ begin
     // filter self oscillation
     if CVValues[pcRes6]>60000 then
     begin
-      cv:=TP600CV(Ord(pcFil6)+i);
+      cv:=TP600CV(Ord(pcFil6)+i*abs(Ord(pcOsc5)-Ord(pcOsc6)));
       if CVValues[cv]>cvV then
       begin
         cvHi:=cv;
@@ -561,7 +575,7 @@ begin
   if cvHi<>pcShape1 then
   begin
       // compute cycles per ACount ticks
-    ratio:=ACount / CZ80Frequency;
+    ratio:=ACount / cZ80Frequency;
     FIncompleteCycles:=FIncompleteCycles + CVHertz[cvHi] * ratio;
     cycles:=Trunc(FIncompleteCycles);
     FIncompleteCycles:=FIncompleteCycles-cycles;

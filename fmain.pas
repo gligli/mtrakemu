@@ -17,41 +17,41 @@ type
   { TMainForm }
 
   TMainForm = class(TForm)
-    bt0: TButton;
-    bt1: TButton;
-    bt10: TButton;
-    bt11: TButton;
-    bt12: TButton;
-    bt13: TButton;
-    bt14: TButton;
-    bt15: TButton;
-    btAutoCor: TButton;
-    btMetro: TButton;
-    btChorus: TButton;
-    btStart: TButton;
-    btUD: TButton;
-    btAppend: TButton;
-    btAssign: TButton;
-    btRecord: TButton;
-    btStacks: TButton;
-    btAD: TButton;
-    bt2: TButton;
-    bt3: TButton;
-    bt4: TButton;
-    bt5: TButton;
-    bt6: TButton;
-    bt7: TButton;
-    bt8: TButton;
-    bt9: TButton;
-    btFromTape: TButton;
-    btMidiCh: TButton;
-    btPrgRec: TButton;
-    btMidiMode: TButton;
-    btPrmEd: TButton;
-    btSeq: TButton;
-    btTick: TButton;
+    bt0: TToggleBox;
+    bt1: TToggleBox;
+    bt10: TToggleBox;
+    bt11: TToggleBox;
+    bt12: TToggleBox;
+    bt13: TToggleBox;
+    bt14: TToggleBox;
+    bt15: TToggleBox;
+    btAutoCor: TToggleBox;
     btInit: TButton;
-    btToTape: TButton;
+    btMetro: TToggleBox;
+    btChorus: TToggleBox;
+    btStart: TToggleBox;
+    btTick: TButton;
+    btUD: TToggleBox;
+    btAppend: TToggleBox;
+    btAssign: TToggleBox;
+    btRecord: TToggleBox;
+    btStacks: TToggleBox;
+    btAD: TToggleBox;
+    bt2: TToggleBox;
+    bt3: TToggleBox;
+    bt4: TToggleBox;
+    bt5: TToggleBox;
+    bt6: TToggleBox;
+    bt7: TToggleBox;
+    bt8: TToggleBox;
+    bt9: TToggleBox;
+    btFromTape: TToggleBox;
+    btMidiCh: TToggleBox;
+    btPrgRec: TToggleBox;
+    btMidiMode: TToggleBox;
+    btPrmEd: TToggleBox;
+    btSeq: TToggleBox;
+    btToTape: TToggleBox;
     kMasterTune: TuEKnob;
     kPrmVal: TuEKnob;
     kMod: TuEKnob;
@@ -115,6 +115,7 @@ type
     ssRight: TSevenSegFrame;
     tiTick: TTimer;
     tbRun: TToggleBox;
+    procedure btInitChange(Sender: TObject);
     procedure btInitClick(Sender: TObject);
     procedure btTickClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -124,9 +125,6 @@ type
     procedure lbxInputDevicesClickCheck(Sender: TObject);
     procedure lvCVData(Sender: TObject; Item: TListItem);
     procedure lvGatesData(Sender: TObject; Item: TListItem);
-    procedure P600ButtonClick(Sender: TObject);
-    procedure P600ButtonMouseDown(Sender: TObject; Button: TMouseButton;
-      Shift: TShiftState; X, Y: Integer);
     procedure tbRunChange(Sender: TObject);
     procedure tiTickTimer(Sender: TObject);
   private
@@ -215,19 +213,6 @@ begin
   end;
 end;
 
-procedure TMainForm.P600ButtonClick(Sender: TObject);
-begin
-  if Sender is TButton then
-    P600Emu.HW.ButtonStates[TP600Button((Sender as TButton).Tag)]:=False;
-end;
-
-procedure TMainForm.P600ButtonMouseDown(Sender: TObject; Button: TMouseButton;
-  Shift: TShiftState; X, Y: Integer);
-begin
-  Assert(Sender is TButton);
-  P600Emu.HW.ButtonStates[TP600Button((Sender as TButton).Tag)]:=True;
-end;
-
 procedure TMainForm.tbRunChange(Sender: TObject);
 begin
   tiTick.Enabled:=tbRun.Checked;
@@ -236,9 +221,8 @@ end;
 procedure TMainForm.tiTickTimer(Sender: TObject);
 var i:Integer;
 begin
-  for i:=0 to tiTick.Interval div CTickMilliseconds * CTimesRealSpeed - 1 do
+  for i:=0 to tiTick.Interval div cTickMilliseconds * CTimesRealSpeed - 1 do
     P600Emu.Tick;
-
   UpdateState;
 end;
 
@@ -254,9 +238,16 @@ begin
   P600Emu.Initialize;
 end;
 
+procedure TMainForm.btInitChange(Sender: TObject);
+begin
+
+end;
+
 procedure TMainForm.UpdateState;
 var cv:TP600CV;
     gt:TP600Gate;
+    c: TToggleBox;
+    i: Integer;
 begin
   with P600Emu.HW do
   begin
@@ -305,6 +296,16 @@ begin
 
     lvCV.Invalidate;
     lvGates.Invalidate;
+
+    for i := 0 to ComponentCount - 1 do
+    begin
+      if not (Components[i] is TToggleBox) then
+        Continue;
+      c := Components[i] as TToggleBox;
+      if c.Tag < 0 then
+        Continue;
+      P600Emu.HW.ButtonStates[TP600Button(c.Tag)] := c.Checked;
+    end;
   end;
 end;
 

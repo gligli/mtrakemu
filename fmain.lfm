@@ -15,24 +15,6 @@ object MainForm: TMainForm
   OnDestroy = FormDestroy
   LCLVersion = '2.0.4.0'
   WindowState = wsMaximized
-  object btTick: TButton
-    Left = 173
-    Height = 25
-    Top = 8
-    Width = 75
-    Caption = 'Next tick'
-    OnClick = btTickClick
-    TabOrder = 0
-  end
-  object btInit: TButton
-    Left = 93
-    Height = 25
-    Top = 8
-    Width = 75
-    Caption = 'Reset'
-    OnClick = btInitClick
-    TabOrder = 1
-  end
   object lvCV: TListView
     Left = 264
     Height = 329
@@ -64,7 +46,7 @@ object MainForm: TMainForm
     OwnerData = True
     ReadOnly = True
     RowSelect = True
-    TabOrder = 2
+    TabOrder = 0
     ViewStyle = vsReport
     OnData = lvCVData
   end
@@ -76,7 +58,7 @@ object MainForm: TMainForm
     Anchors = [akTop, akLeft, akBottom]
     ItemHeight = 0
     OnClickCheck = lbxInputDevicesClickCheck
-    TabOrder = 3
+    TabOrder = 1
   end
   object llCurCtrl: TLabel
     Left = 8
@@ -89,13 +71,14 @@ object MainForm: TMainForm
     ParentColor = False
   end
   object tbRun: TToggleBox
+    Tag = -1
     Left = 8
     Height = 25
     Top = 8
     Width = 80
     Caption = 'Run emulator'
     OnChange = tbRunChange
-    TabOrder = 4
+    TabOrder = 2
   end
   object pnP600: TPanel
     Left = 0
@@ -108,7 +91,7 @@ object MainForm: TMainForm
     ClientWidth = 1088
     Color = clBlack
     ParentColor = False
-    TabOrder = 5
+    TabOrder = 3
     object kMasterTune: TuEKnob
       Left = 1008
       Height = 64
@@ -289,48 +272,40 @@ object MainForm: TMainForm
       OnMouseEnter = kPrmValMouseEnter
       OnMouseLeave = kPrmValMouseLeave
     end
-    object btFromTape: TButton
+    object btFromTape: TToggleBox
       Tag = 52
       Left = 952
       Height = 25
       Top = 13
       Width = 48
-      Caption = 'From t.'
-      OnClick = P600ButtonClick
-      OnMouseDown = P600ButtonMouseDown
+      Caption = 'FromT'
       TabOrder = 0
     end
-    object btToTape: TButton
+    object btToTape: TToggleBox
       Tag = 51
       Left = 896
       Height = 25
       Top = 13
       Width = 48
-      Caption = 'To t.'
-      OnClick = P600ButtonClick
-      OnMouseDown = P600ButtonMouseDown
+      Caption = 'ToT'
       TabOrder = 1
     end
-    object btMidiCh: TButton
+    object btMidiCh: TToggleBox
       Tag = 49
       Left = 776
       Height = 25
-      Top = 13
+      Top = 12
       Width = 48
-      Caption = 'MIDI Ch.'
-      OnClick = P600ButtonClick
-      OnMouseDown = P600ButtonMouseDown
+      Caption = 'MIDICh'
       TabOrder = 2
     end
-    object btMidiMode: TButton
+    object btMidiMode: TToggleBox
       Tag = 50
       Left = 832
       Height = 25
       Top = 13
       Width = 48
-      Caption = 'MIDI Md.'
-      OnClick = P600ButtonClick
-      OnMouseDown = P600ButtonMouseDown
+      Caption = 'MIDIMd'
       TabOrder = 3
     end
     object lChorus: TuELED
@@ -905,7 +880,7 @@ object MainForm: TMainForm
       OnMouseEnter = kPrmValMouseEnter
       OnMouseLeave = kPrmValMouseLeave
     end
-    object bt1: TButton
+    object bt1: TToggleBox
       Tag = 1
       Left = 768
       Height = 24
@@ -914,12 +889,10 @@ object MainForm: TMainForm
       Caption = '1'
       Color = clBlack
       Font.Color = clWhite
-      OnClick = P600ButtonClick
-      OnMouseDown = P600ButtonMouseDown
       ParentFont = False
       TabOrder = 6
     end
-    object bt2: TButton
+    object bt2: TToggleBox
       Tag = 2
       Left = 796
       Height = 24
@@ -928,12 +901,10 @@ object MainForm: TMainForm
       Caption = '2'
       Color = clBlack
       Font.Color = clWhite
-      OnClick = P600ButtonClick
-      OnMouseDown = P600ButtonMouseDown
       ParentFont = False
       TabOrder = 7
     end
-    object bt3: TButton
+    object bt3: TToggleBox
       Tag = 3
       Left = 824
       Height = 24
@@ -942,12 +913,10 @@ object MainForm: TMainForm
       Caption = '3'
       Color = clBlack
       Font.Color = clWhite
-      OnClick = P600ButtonClick
-      OnMouseDown = P600ButtonMouseDown
       ParentFont = False
       TabOrder = 8
     end
-    object bt4: TButton
+    object bt4: TToggleBox
       Tag = 4
       Left = 852
       Height = 24
@@ -956,12 +925,10 @@ object MainForm: TMainForm
       Caption = '4'
       Color = clBlack
       Font.Color = clWhite
-      OnClick = P600ButtonClick
-      OnMouseDown = P600ButtonMouseDown
       ParentFont = False
       TabOrder = 9
     end
-    object bt5: TButton
+    object bt5: TToggleBox
       Tag = 16
       Left = 880
       Height = 24
@@ -970,12 +937,10 @@ object MainForm: TMainForm
       Caption = '5'
       Color = clBlack
       Font.Color = clWhite
-      OnClick = P600ButtonClick
-      OnMouseDown = P600ButtonMouseDown
       ParentFont = False
       TabOrder = 10
     end
-    object bt6: TButton
+    object bt6: TToggleBox
       Tag = 17
       Left = 908
       Height = 24
@@ -984,12 +949,10 @@ object MainForm: TMainForm
       Caption = '6'
       Color = clBlack
       Font.Color = clWhite
-      OnClick = P600ButtonClick
-      OnMouseDown = P600ButtonMouseDown
       ParentFont = False
       TabOrder = 11
     end
-    object bt7: TButton
+    object bt7: TToggleBox
       Tag = 18
       Left = 936
       Height = 24
@@ -998,12 +961,10 @@ object MainForm: TMainForm
       Caption = '7'
       Color = clBlack
       Font.Color = clWhite
-      OnClick = P600ButtonClick
-      OnMouseDown = P600ButtonMouseDown
       ParentFont = False
       TabOrder = 12
     end
-    object bt8: TButton
+    object bt8: TToggleBox
       Tag = 19
       Left = 964
       Height = 24
@@ -1012,12 +973,10 @@ object MainForm: TMainForm
       Caption = '8'
       Color = clBlack
       Font.Color = clWhite
-      OnClick = P600ButtonClick
-      OnMouseDown = P600ButtonMouseDown
       ParentFont = False
       TabOrder = 13
     end
-    object bt9: TButton
+    object bt9: TToggleBox
       Tag = 20
       Left = 992
       Height = 24
@@ -1026,12 +985,10 @@ object MainForm: TMainForm
       Caption = '9'
       Color = clBlack
       Font.Color = clWhite
-      OnClick = P600ButtonClick
-      OnMouseDown = P600ButtonMouseDown
       ParentFont = False
       TabOrder = 14
     end
-    object bt0: TButton
+    object bt0: TToggleBox
       Left = 740
       Height = 24
       Top = 148
@@ -1039,8 +996,6 @@ object MainForm: TMainForm
       Caption = '0'
       Color = clBlack
       Font.Color = clWhite
-      OnClick = P600ButtonClick
-      OnMouseDown = P600ButtonMouseDown
       ParentFont = False
       TabOrder = 15
     end
@@ -1212,7 +1167,7 @@ object MainForm: TMainForm
       Color = clRed
       ParentColor = False
     end
-    object btAD: TButton
+    object btAD: TToggleBox
       Tag = 32
       Left = 704
       Height = 24
@@ -1221,31 +1176,25 @@ object MainForm: TMainForm
       Caption = 'AD'
       Color = clBlack
       Font.Color = clWhite
-      OnClick = P600ButtonClick
-      OnMouseDown = P600ButtonMouseDown
       ParentFont = False
       TabOrder = 16
     end
-    object btPrgRec: TButton
+    object btPrgRec: TToggleBox
       Tag = 34
       Left = 584
       Height = 25
       Top = 147
       Width = 48
-      Caption = 'Prg Rec.'
-      OnClick = P600ButtonClick
-      OnMouseDown = P600ButtonMouseDown
+      Caption = 'PrgRec'
       TabOrder = 17
     end
-    object btPrmEd: TButton
+    object btPrmEd: TToggleBox
       Tag = 33
       Left = 640
       Height = 25
       Top = 147
       Width = 48
-      Caption = 'Prm Edit'
-      OnClick = P600ButtonClick
-      OnMouseDown = P600ButtonMouseDown
+      Caption = 'PrmEdit'
       TabOrder = 18
     end
     object lPrgRec: TuELED
@@ -1272,7 +1221,7 @@ object MainForm: TMainForm
       Color = clRed
       ParentColor = False
     end
-    object bt10: TButton
+    object bt10: TToggleBox
       Tag = 64
       Left = 180
       Height = 24
@@ -1281,12 +1230,10 @@ object MainForm: TMainForm
       Caption = '1'
       Color = clBlack
       Font.Color = clWhite
-      OnClick = P600ButtonClick
-      OnMouseDown = P600ButtonMouseDown
       ParentFont = False
       TabOrder = 19
     end
-    object bt11: TButton
+    object bt11: TToggleBox
       Tag = 80
       Left = 208
       Height = 24
@@ -1295,12 +1242,10 @@ object MainForm: TMainForm
       Caption = '2'
       Color = clBlack
       Font.Color = clWhite
-      OnClick = P600ButtonClick
-      OnMouseDown = P600ButtonMouseDown
       ParentFont = False
       TabOrder = 20
     end
-    object bt12: TButton
+    object bt12: TToggleBox
       Tag = 81
       Left = 236
       Height = 24
@@ -1309,12 +1254,10 @@ object MainForm: TMainForm
       Caption = '3'
       Color = clBlack
       Font.Color = clWhite
-      OnClick = P600ButtonClick
-      OnMouseDown = P600ButtonMouseDown
       ParentFont = False
       TabOrder = 21
     end
-    object bt13: TButton
+    object bt13: TToggleBox
       Tag = 82
       Left = 264
       Height = 24
@@ -1323,12 +1266,10 @@ object MainForm: TMainForm
       Caption = '4'
       Color = clBlack
       Font.Color = clWhite
-      OnClick = P600ButtonClick
-      OnMouseDown = P600ButtonMouseDown
       ParentFont = False
       TabOrder = 22
     end
-    object bt14: TButton
+    object bt14: TToggleBox
       Tag = 83
       Left = 292
       Height = 24
@@ -1337,12 +1278,10 @@ object MainForm: TMainForm
       Caption = '5'
       Color = clBlack
       Font.Color = clWhite
-      OnClick = P600ButtonClick
-      OnMouseDown = P600ButtonMouseDown
       ParentFont = False
       TabOrder = 23
     end
-    object bt15: TButton
+    object bt15: TToggleBox
       Tag = 84
       Left = 320
       Height = 24
@@ -1351,12 +1290,10 @@ object MainForm: TMainForm
       Caption = '6'
       Color = clBlack
       Font.Color = clWhite
-      OnClick = P600ButtonClick
-      OnMouseDown = P600ButtonMouseDown
       ParentFont = False
       TabOrder = 24
     end
-    object btStacks: TButton
+    object btStacks: TToggleBox
       Tag = 35
       Left = 348
       Height = 24
@@ -1365,8 +1302,6 @@ object MainForm: TMainForm
       Caption = 'Stacks'
       Color = clBlack
       Font.Color = clWhite
-      OnClick = P600ButtonClick
-      OnMouseDown = P600ButtonMouseDown
       ParentFont = False
       TabOrder = 25
     end
@@ -1454,7 +1389,7 @@ object MainForm: TMainForm
       Color = clRed
       ParentColor = False
     end
-    object btSeq: TButton
+    object btSeq: TToggleBox
       Tag = 65
       Left = 180
       Height = 24
@@ -1463,8 +1398,6 @@ object MainForm: TMainForm
       Caption = 'Seq'
       Color = clBlack
       Font.Color = clWhite
-      OnClick = P600ButtonClick
-      OnMouseDown = P600ButtonMouseDown
       ParentFont = False
       TabOrder = 26
     end
@@ -1516,26 +1449,22 @@ object MainForm: TMainForm
       Color = clRed
       ParentColor = False
     end
-    object btUD: TButton
+    object btUD: TToggleBox
       Tag = 66
       Left = 292
       Height = 25
       Top = 147
       Width = 48
-      Caption = 'Up/Down'
-      OnClick = P600ButtonClick
-      OnMouseDown = P600ButtonMouseDown
+      Caption = 'UpDn'
       TabOrder = 27
     end
-    object btAssign: TButton
+    object btAssign: TToggleBox
       Tag = 67
       Left = 348
       Height = 25
       Top = 147
       Width = 48
       Caption = 'Assign'
-      OnClick = P600ButtonClick
-      OnMouseDown = P600ButtonMouseDown
       TabOrder = 28
     end
     object lUD: TuELED
@@ -1562,26 +1491,22 @@ object MainForm: TMainForm
       Color = clRed
       ParentColor = False
     end
-    object btAppend: TButton
+    object btAppend: TToggleBox
       Tag = 99
       Left = 180
       Height = 25
       Top = 147
       Width = 48
       Caption = 'Append'
-      OnClick = P600ButtonClick
-      OnMouseDown = P600ButtonMouseDown
       TabOrder = 29
     end
-    object btRecord: TButton
+    object btRecord: TToggleBox
       Tag = 67
       Left = 236
       Height = 25
       Top = 147
       Width = 48
       Caption = 'Record'
-      OnClick = P600ButtonClick
-      OnMouseDown = P600ButtonMouseDown
       TabOrder = 30
     end
     object lAppend: TuELED
@@ -1608,37 +1533,31 @@ object MainForm: TMainForm
       Color = clRed
       ParentColor = False
     end
-    object btStart: TButton
+    object btStart: TToggleBox
       Tag = 96
       Left = 12
       Height = 25
       Top = 147
       Width = 48
       Caption = 'Start'
-      OnClick = P600ButtonClick
-      OnMouseDown = P600ButtonMouseDown
       TabOrder = 31
     end
-    object btAutoCor: TButton
+    object btAutoCor: TToggleBox
       Tag = 97
       Left = 68
       Height = 25
       Top = 147
       Width = 48
-      Caption = 'Auto Cor'
-      OnClick = P600ButtonClick
-      OnMouseDown = P600ButtonMouseDown
+      Caption = 'AutoCor'
       TabOrder = 32
     end
-    object btMetro: TButton
+    object btMetro: TToggleBox
       Tag = 98
       Left = 124
       Height = 25
       Top = 147
       Width = 48
       Caption = 'Metro'
-      OnClick = P600ButtonClick
-      OnMouseDown = P600ButtonMouseDown
       TabOrder = 33
     end
     object kPitch: TuEKnob
@@ -1979,7 +1898,7 @@ object MainForm: TMainForm
         0000000000000000000000000000000000000000000000000000000000000000
         000000000000000000000000000000000000
       }
-      Position = 32767
+      Position = 0
       TicksMargin = 16
       LTicks = 10
       LTicksSize = 10
@@ -2001,7 +1920,7 @@ object MainForm: TMainForm
       OnMouseEnter = kPrmValMouseEnter
       OnMouseLeave = kPrmValMouseLeave
     end
-    object btChorus: TButton
+    object btChorus: TToggleBox
       Tag = 48
       Left = 1024
       Height = 24
@@ -2010,8 +1929,6 @@ object MainForm: TMainForm
       Caption = 'Chorus'
       Color = clBlack
       Font.Color = clWhite
-      OnClick = P600ButtonClick
-      OnMouseDown = P600ButtonMouseDown
       ParentFont = False
       TabOrder = 34
     end
@@ -2037,9 +1954,27 @@ object MainForm: TMainForm
     OwnerData = True
     ReadOnly = True
     RowSelect = True
-    TabOrder = 6
+    TabOrder = 4
     ViewStyle = vsReport
     OnData = lvGatesData
+  end
+  object btInit: TButton
+    Left = 93
+    Height = 25
+    Top = 8
+    Width = 75
+    Caption = 'Reset'
+    OnClick = btInitClick
+    TabOrder = 5
+  end
+  object btTick: TButton
+    Left = 173
+    Height = 25
+    Top = 8
+    Width = 75
+    Caption = 'Next tick'
+    OnClick = btTickClick
+    TabOrder = 6
   end
   object tiTick: TTimer
     Enabled = False
