@@ -31,6 +31,7 @@ type
     btChorus: TToggleBox;
     btStart: TToggleBox;
     btTick: TButton;
+    btSave: TButton;
     btUD: TToggleBox;
     btAppend: TToggleBox;
     btAssign: TToggleBox;
@@ -115,8 +116,8 @@ type
     ssRight: TSevenSegFrame;
     tiTick: TTimer;
     tbRun: TToggleBox;
-    procedure btInitChange(Sender: TObject);
     procedure btInitClick(Sender: TObject);
+    procedure btSaveClick(Sender: TObject);
     procedure btTickClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -238,9 +239,9 @@ begin
   P600Emu.Initialize;
 end;
 
-procedure TMainForm.btInitChange(Sender: TObject);
+procedure TMainForm.btSaveClick(Sender: TObject);
 begin
-
+  P600Emu.SaveRamToFile;
 end;
 
 procedure TMainForm.UpdateState;

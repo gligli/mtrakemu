@@ -8,7 +8,7 @@ uses
   Classes, SysUtils, raze, LazLogger, math, windows;
 
 const
-  cTickMilliseconds = 7;
+  cTickMilliseconds = 8;
   cZ80Frequency = 4000000;
   cZ80CyclesPerTick = (cZ80Frequency div 1000) * cTickMilliseconds;
   cEmulationQuantum = 4;
@@ -98,6 +98,8 @@ type
     procedure Initialize;
 
     procedure LoadRomFromFile(AFileName:String);
+    procedure LoadRamFromFile(AFileName:String);
+    procedure SaveRamToFile(AFileName:String);
     procedure Write(AIsIO:Boolean;AAddress:Word;AValue:Byte);
     function Read(AIsIO:Boolean;AAddress:Word):Byte;
 
@@ -123,6 +125,7 @@ type
     FHW:TProphet600Hardware;
   public
     procedure Initialize;
+    procedure SaveRamToFile;
 
     procedure Tick; // advance one 5ms tick
 
@@ -178,6 +181,7 @@ procedure TProphet600Emulator.Initialize;
 begin
   HW.Initialize;
   HW.LoadRomFromFile(ExtractFilePath(ParamStr(0))+'mtrak.bin');
+  HW.LoadRamFromFile(ExtractFilePath(ParamStr(0))+'mtrak_nvram.bin');
 
   z80_init_memmap;
   z80_map_fetch($0000,$3fff,@HW.FRom[0]);
@@ -189,6 +193,11 @@ begin
   z80_set_out(@P600Emu_WriteIO);
 
   z80_reset;
+end;
+
+procedure TProphet600Emulator.SaveRamToFile;
+begin
+  HW.SaveRamToFile(ExtractFilePath(ParamStr(0))+'mtrak_nvram.bin');
 end;
 
 procedure TProphet600Emulator.Tick;
@@ -332,6 +341,32 @@ begin
   end;
 end;
 
+procedure TProphet600Hardware.LoadRamFromFile(AFileName: String);
+var fs:TFileStream;
+begin
+  if not FileExists(AFileName) then
+    Exit;
+
+  fs:=TFileStream.Create(AFileName,fmOpenRead or fmShareDenyWrite);
+  try
+    Assert(fs.Size=Length(FRam));
+    fs.Read(FRam,Length(FRam));
+  finally
+    fs.Free;
+  end;
+end;
+
+procedure TProphet600Hardware.SaveRamToFile(AFileName: String);
+var fs:TFileStream;
+begin
+  fs:=TFileStream.Create(AFileName,fmCreate or fmShareDenyWrite);
+  try
+    fs.Write(FRam,Length(FRam));
+  finally
+    fs.Free;
+  end;
+end;
+
 procedure TProphet600Hardware.Write(AIsIO: Boolean; AAddress: Word; AValue: Byte);
 var
   i, j: Integer;
@@ -343,7 +378,7 @@ begin
 
     case AAddress of
       $0000..$3fff:
-        Assert(False);
+        ;//Assert(False);
       $4000..$67ff:
         FRam[AAddress and $3fff] := AValue;
     end;
@@ -559,7 +594,7 @@ begin
     if cvHi <> pcShape1 then
     begin
         // compute cycles per ACount ticks
-      ratio := ACount / cZ80Frequency * 2.0;
+      ratio := ACount / cZ80Frequency;
       FIncompleteCycles += CVHertz[cvHi] * ratio;
       cycles := Trunc(FIncompleteCycles);
       FIncompleteCycles -= cycles;

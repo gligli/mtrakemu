@@ -15,13 +15,13 @@ object MainForm: TMainForm
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   ParentDoubleBuffered = False
-  LCLVersion = '2.0.4.0'
+  LCLVersion = '2.0.6.0'
   WindowState = wsMaximized
   object lvCV: TListView
-    Left = 264
+    Left = 280
     Height = 329
     Top = 8
-    Width = 400
+    Width = 384
     Anchors = [akTop, akLeft, akBottom]
     Columns = <    
       item
@@ -55,7 +55,7 @@ object MainForm: TMainForm
     Left = 8
     Height = 272
     Top = 40
-    Width = 241
+    Width = 257
     Anchors = [akTop, akLeft, akBottom]
     ItemHeight = 0
     OnClickCheck = lbxInputDevicesClickCheck
@@ -76,8 +76,8 @@ object MainForm: TMainForm
     Left = 8
     Height = 25
     Top = 8
-    Width = 80
-    Caption = 'Run emulator'
+    Width = 64
+    Caption = 'Run'
     OnChange = tbRunChange
     TabOrder = 2
   end
@@ -1959,22 +1959,31 @@ object MainForm: TMainForm
     OnData = lvGatesData
   end
   object btInit: TButton
-    Left = 93
+    Left = 72
     Height = 25
     Top = 8
-    Width = 75
+    Width = 64
     Caption = 'Reset'
     OnClick = btInitClick
     TabOrder = 5
   end
   object btTick: TButton
-    Left = 173
+    Left = 136
     Height = 25
     Top = 8
-    Width = 75
+    Width = 64
     Caption = 'Next tick'
     OnClick = btTickClick
     TabOrder = 6
+  end
+  object btSave: TButton
+    Left = 200
+    Height = 25
+    Top = 8
+    Width = 64
+    Caption = 'Save'
+    OnClick = btSaveClick
+    TabOrder = 7
   end
   object tiTick: TTimer
     Enabled = False
