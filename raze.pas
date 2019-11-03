@@ -40,37 +40,37 @@ interface
 
 
     // Z80 main functions
-    procedure z80_reset; cdecl; external 'raze.dll' name '_z80_reset';
-    function z80_emulate(cycles: integer): integer; cdecl; external 'raze.dll' name '_z80_emulate';
-    procedure z80_raise_IRQ(vector: byte); cdecl; external 'raze.dll' name '_z80_raise_IRQ';
-    procedure z80_lower_IRQ; cdecl; external 'raze.dll' name '_z80_lower_IRQ';
-    procedure z80_cause_NMI; cdecl; external 'raze.dll' name '_z80_cause_NMI';
+    procedure z80_reset; cdecl; external 'raze2.dll' name '_z80_reset';
+    function z80_emulate(cycles: integer): integer; cdecl; external 'raze2.dll' name '_z80_emulate';
+    procedure z80_raise_IRQ(vector: byte); cdecl; external 'raze2.dll' name '_z80_raise_IRQ';
+    procedure z80_lower_IRQ; cdecl; external 'raze2.dll' name '_z80_lower_IRQ';
+    procedure z80_cause_NMI; cdecl; external 'raze2.dll' name '_z80_cause_NMI';
 
     // Z80 context functions
-    function z80_get_context_size: integer; cdecl; external 'raze.dll' name '_z80_get_context_size';
-    procedure z80_set_context(context: pointer); cdecl; external 'raze.dll' name '_z80_set_context';
-    procedure z80_get_context(context: pointer); cdecl; external 'raze.dll' name '_z80_get_context';
-    function z80_get_reg(reg: z80_register): word; cdecl; external 'raze.dll' name '_z80_get_reg';
-    procedure z80_set_reg(reg: z80_register; value: word); cdecl; external 'raze.dll' name '_z80_set_reg';
+    function z80_get_context_size: integer; cdecl; external 'raze2.dll' name '_z80_get_context_size';
+    procedure z80_set_context(context: pointer); cdecl; external 'raze2.dll' name '_z80_set_context';
+    procedure z80_get_context(context: pointer); cdecl; external 'raze2.dll' name '_z80_get_context';
+    function z80_get_reg(reg: z80_register): word; cdecl; external 'raze2.dll' name '_z80_get_reg';
+    procedure z80_set_reg(reg: z80_register; value: word); cdecl; external 'raze2.dll' name '_z80_set_reg';
 
     // Z80 cycle functions
-    function z80_get_cycles_elapsed: integer; cdecl; external 'raze.dll' name '_z80_get_cycles_elapsed';
-    procedure z80_stop_emulating; cdecl; external 'raze.dll' name '_z80_stop_emulating';
-    procedure z80_skip_idle; cdecl; external 'raze.dll' name '_z80_skip_idle';
-    procedure z80_do_wait_states(n: integer); cdecl; external 'raze.dll' name '_z80_do_wait_states';
+    function z80_get_cycles_elapsed: integer; cdecl; external 'raze2.dll' name '_z80_get_cycles_elapsed';
+    procedure z80_stop_emulating; cdecl; external 'raze2.dll' name '_z80_stop_emulating';
+    procedure z80_skip_idle; cdecl; external 'raze2.dll' name '_z80_skip_idle';
+    procedure z80_do_wait_states(n: integer); cdecl; external 'raze2.dll' name '_z80_do_wait_states';
 
     // Z80 I/O functions
-    procedure z80_init_memmap; cdecl; external 'raze.dll' name '_z80_init_memmap';
-    procedure z80_map_fetch(start, finish: word; memory: pbyte); cdecl; external 'raze.dll' name '_z80_map_fetch';
-    procedure z80_map_read(start, finish: word; memory: pbyte); cdecl; external 'raze.dll' name '_z80_map_read';
-    procedure z80_map_write(start, finish: word; memory: pbyte); cdecl; external 'raze.dll' name '_z80_map_write';
-    procedure z80_add_read(start, finish: word; method: integer; data: pointer); cdecl; external 'raze.dll' name '_z80_add_read';
-    procedure z80_add_write(start, finish: word; method: integer; data: pointer); cdecl; external 'raze.dll' name '_z80_add_write';
-    procedure z80_set_in(handler: tSetInProcedure); cdecl; external 'raze.dll' name '_z80_set_in';
-    procedure z80_set_out(handler: tSetOutProcedure); cdecl; external 'raze.dll' name '_z80_set_out';
-    procedure z80_set_reti(handler: tSetRetiProcedure); cdecl; external 'raze.dll' name '_z80_set_reti';
-    procedure z80_set_fetch_callback(handler: tsetFetchCallbackProcedure); cdecl; external 'raze.dll' name '_z80_set_fetch_callback';
-    procedure z80_end_memmap; cdecl; external 'raze.dll' name '_z80_end_memmap';
+    procedure z80_init_memmap; cdecl; external 'raze2.dll' name '_z80_init_memmap';
+    procedure z80_map_fetch(start, finish: word; memory: pbyte); cdecl; external 'raze2.dll' name '_z80_map_fetch';
+    procedure z80_map_read(start, finish: word; memory: pbyte); cdecl; external 'raze2.dll' name '_z80_map_read';
+    procedure z80_map_write(start, finish: word; memory: pbyte); cdecl; external 'raze2.dll' name '_z80_map_write';
+    procedure z80_add_read(start, finish: word; method: integer; data: pointer); cdecl; external 'raze2.dll' name '_z80_add_read';
+    procedure z80_add_write(start, finish: word; method: integer; data: pointer); cdecl; external 'raze2.dll' name '_z80_add_write';
+    procedure z80_set_in(handler: tSetInProcedure); cdecl; external 'raze2.dll' name '_z80_set_in';
+    procedure z80_set_out(handler: tSetOutProcedure); cdecl; external 'raze2.dll' name '_z80_set_out';
+    procedure z80_set_reti(handler: tSetRetiProcedure); cdecl; external 'raze2.dll' name '_z80_set_reti';
+    procedure z80_set_fetch_callback(handler: tsetFetchCallbackProcedure); cdecl; external 'raze2.dll' name '_z80_set_fetch_callback';
+    procedure z80_end_memmap; cdecl; external 'raze2.dll' name '_z80_end_memmap';
 
 
 implementation

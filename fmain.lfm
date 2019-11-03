@@ -3,7 +3,7 @@ object MainForm: TMainForm
   Height = 522
   Top = 70
   Width = 1088
-  Caption = 'Prophet 600 emulator'
+  Caption = 'MultiTrak emulator'
   ClientHeight = 522
   ClientWidth = 1088
   DoubleBuffered = False

@@ -8,16 +8,18 @@ uses
   Classes, SysUtils, raze, LazLogger, math, windows;
 
 const
-  cTickMilliseconds=7;
-  cZ80Frequency=4000000;
-  cZ80CyclesPerTick=(cZ80Frequency div 1000) * cTickMilliseconds;
-  cEmulationQuantum=4;
+  cTickMilliseconds = 7;
+  cZ80Frequency = 4000000;
+  cZ80CyclesPerTick = (cZ80Frequency div 1000) * cTickMilliseconds;
+  cEmulationQuantum = 4;
 
   cP600VoiceCount = 6;
   cDisplayTimeout = 100000;
 
 type
-  TP600Pot=(ppDACM,ppTrkVol,ppDACP,ppSpeed,ppPitch,ppValue,ppMod,ppTune);
+  TP600Pot=(
+    ppDACM,ppDACP,ppPitch,ppMod,ppTrkVol,ppSpeed,ppValue,ppTune
+  );
 
   TP600LED=(
     plA1,plB1,plC1,plD1,plE1,plF1,plG1,plDP1,
@@ -59,7 +61,7 @@ type
     FIOCSData:array[0..7] of Byte;
 
     FTuneCntLo, FTuneCntHi: Integer;
-    FTuneCntDone: Boolean;
+    FTuneCntInh, FTuneCntDone: Boolean;
 
     FPICPhase: Integer;
     FPICCtr, FPICPre: Byte;
@@ -126,6 +128,9 @@ type
 
     property HW:TProphet600Hardware read FHW;
   end;
+
+const
+  CABCToPot : array[0..7] of TP600Pot = (ppDACP, ppTrkVol, ppMod, ppSpeed, ppDACM, ppValue, ppPitch, ppTune);
 
 var
   P600Emu:TProphet600Emulator;
@@ -210,7 +215,7 @@ end;
 
 function TProphet600Hardware.ADCCompare: Boolean;
 begin
-  Result:=Integer(FPotValues[TP600Pot(FSHAD shr 5)] shr 4) > (4095 - FDACValue);
+  Result:=Integer(FPotValues[CABCToPot[FSHAD shr 5]] shr 4) > FDACValue;
 end;
 
 procedure TProphet600Hardware.UpdateCVs;
@@ -221,10 +226,10 @@ begin
   reg:=FSHAD and $7;
 
   dv := 65536;
-  if TP600Pot(FSHAD shr 5) = ppDACM then
-    dv := (4095 - FDACValue)
-  else if TP600Pot(FSHAD shr 5) = ppDACP then
-    dv := -(4095 - FDACValue);
+  if CABCToPot[FSHAD shr 5] = ppDACM then
+    dv := -FDACValue
+  else if CABCToPot[FSHAD shr 5] = ppDACP then
+    dv := FDACValue;
 
   for i := 0 to cP600VoiceCount - 1 do
     if (FSHEnable and (1 shl i)) = 0 then
@@ -233,7 +238,7 @@ end;
 
 function TProphet600Hardware.GetCVHertz(ACV: TP600CV): Double;
 begin
-  Result:=13.75*power(2.0,(CVVolts[ACV]+4.0)/8.0*10.5);
+  Result := ifthen(TP600CV(Ord(ACV) and $07) = pcFil6, 1300.0 * power(2.0, CVVolts[ACV] / 0.38), 500.0 * power(2.0, CVVolts[ACV] / 0.75));
 end;
 
 function TProphet600Hardware.GetGateValues(AGate: TP600Gate): Boolean;
@@ -257,7 +262,7 @@ end;
 
 function TProphet600Hardware.GetCVVolts(ACV: TP600CV): Double;
 begin
-  if CVValues[ACV] > 4096 then
+  if abs(CVValues[ACV]) > 4096 then
     Result:=-10.0
   else
     Result:=(CVValues[ACV] / 4095.0) * 4.0;
@@ -298,6 +303,21 @@ begin
   FillChar(FKeyStates[0], SizeOf(FKeyStates), 0);
 
   ButtonStates[pbTP] := True;
+
+  FTuneCntDone := False;
+  FTuneCntInh := True;
+  FTuneCntHi := 0;
+  FTuneCntLo := 1;
+
+  FPICCntComp := False;
+  FPICCtr := 0;
+  FPICPhase := 0;
+  FPICPre := 0;
+
+  F7MsInt := False;
+  F7MsPhase := 0;
+  F7MsPre := 0;
+  FCurTick := 0;
 end;
 
 procedure TProphet600Hardware.LoadRomFromFile(AFileName: String);
@@ -366,12 +386,12 @@ begin
       case AAddress and $0f of
         0:
         begin
-          FDACValue:=(FDACValue and $0fc0) or ((Integer(AValue xor $ff) shr 2) and $3f);
+          FDACValue:=(FDACValue and $0fc0) or ((Integer(AValue) shr 2) and $3f);
           UpdateCVs;
         end;
         1:
         begin
-          FDACValue:=(FDACValue and $003f) or ((Integer(AValue xor $ff) and $3f) shl 6);
+          FDACValue:=(FDACValue and $003f) or ((Integer(AValue) and $3f) shl 6);
           UpdateCVs;
         end;
         2:
@@ -394,6 +414,10 @@ begin
           FTuneCntLo := Integer(AValue and $1f or $01);
           FTuneCntHi := 0;
           FTuneCntDone := False;
+        end;
+        $c:
+        begin
+          FTuneCntInh := (AValue and 8) <> 0;
         end;
         $e:
         begin
@@ -477,8 +501,8 @@ begin
 end;
 
 procedure TProphet600Hardware.RunCycles(ACount: Integer);
-var cv,cvAmp,cvHi:TP600CV;
-    cvV:Word;
+var cv,cvHi,cvFil:TP600CV;
+    cvV:Integer;
     i, cycles:Integer;
     ratio:Double;
     l: TP600LED;
@@ -499,51 +523,63 @@ begin
 
   // tune counter
 
-    // find highest pitched osc
-  cvV:=0;
-  cvHi:=pcShape1; // dummy
-  for i:=0 to cP600VoiceCount - 1 do
+  if not FTuneCntDone then
   begin
-    cvAmp:=TP600CV(Ord(pcAmp6)+i*abs(Ord(pcOsc5)-Ord(pcOsc6)));
-    if CVValues[cvAmp] < 1 * 4096 div 16 then
-      Continue;
-
-    // osc
-    cv:=TP600CV(Ord(pcOsc6)+i*abs(Ord(pcOsc5)-Ord(pcOsc6)));
-    if CVValues[cv]>cvV then
+      // find highest pitched osc
+    cvV := -65536;
+    cvHi := pcShape1; // dummy
+    for i := 0 to cP600VoiceCount - 1 do
     begin
-      cvHi:=cv;
-      cvV:=CVValues[cv];
-    end;
+      cv := TP600CV(Ord(pcAmp6) + i * abs(Ord(pcOsc5) - Ord(pcOsc6)));
+      if CVValues[cv] > -8 * 4096 div 16 then
+        Continue;
 
-    // filter self oscillation
-    if CVValues[pcRes6] > 15 * 4096 div 16 then
-    begin
-      cv:=TP600CV(Ord(pcFil6)+i*abs(Ord(pcOsc5)-Ord(pcOsc6)));
-      if CVValues[cv]>cvV then
+      // osc
+      cvFil := TP600CV(Ord(pcFil6) + i * abs(Ord(pcOsc5) - Ord(pcOsc6)));
+      cv := TP600CV(Ord(pcOsc6) + i * abs(Ord(pcOsc5) - Ord(pcOsc6)));
+      if (CVValues[cv] > cvV) and (CVHertz[cvFil] >= CVHertz[cv]) then
       begin
-        cvHi:=cv;
-        cvV:=CVValues[cv];
+        cvHi := cv;
+        cvV := CVValues[cv];
+      end;
+
+      // filter self oscillation
+      cv := TP600CV(Ord(pcRes6) + i * abs(Ord(pcOsc5) - Ord(pcOsc6)));
+      if CVValues[cv] < -8 * 4096 div 16 then
+      begin
+        cv := TP600CV(Ord(pcFil6) + i * abs(Ord(pcOsc5) - Ord(pcOsc6)));
+        if CVValues[cv] > cvV then
+        begin
+          cvHi := cv;
+          cvV := CVValues[cv];
+        end;
       end;
     end;
+
+    if cvHi <> pcShape1 then
+    begin
+        // compute cycles per ACount ticks
+      ratio := ACount / cZ80Frequency * 2.0;
+      FIncompleteCycles += CVHertz[cvHi] * ratio;
+      cycles := Trunc(FIncompleteCycles);
+      FIncompleteCycles -= cycles;
+
+      if cycles > 0 then
+      begin
+        Dec(FTuneCntLo, cycles);
+      end;
+    end;
+
+    // SCI combo chip part
+
+    if FTuneCntLo < 0 then
+      FTuneCntDone := True
+    else if not FTuneCntInh then
+      FTuneCntHi += ACount;
+
+    //if ((FCurTick mod 100) = 0) and not FTuneCntInh then
+    //  WriteLn(FTuneCntLo,#9,FTuneCntHi,#9'done',FTuneCntDone,#9'inh',FTuneCntInh);
   end;
-
-  if cvHi<>pcShape1 then
-  begin
-      // compute cycles per ACount ticks
-    ratio:=ACount / cZ80Frequency;
-    FIncompleteCycles:=FIncompleteCycles + CVHertz[cvHi] * ratio;
-    cycles:=Trunc(FIncompleteCycles);
-    FIncompleteCycles:=FIncompleteCycles-cycles;
-
-    Dec(FTuneCntLo, cycles);
-  end;
-
-  // SCI combo chip part
-
-  FTuneCntHi += ACount;
-  if FTuneCntLo <= 0 then
-    FTuneCntDone := True;
 
   // 7ms interrupt timer
 
