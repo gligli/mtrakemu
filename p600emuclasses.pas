@@ -49,7 +49,7 @@ type
     pbChorus=$30,pbMidiCh,pbMidiMode,pbToTape,pbFromTape,
     pbT1=$40,pbSeq,pbUD,pbAssign,pbRecord,
     pbT2=$50,pbT3,pbT4,pbT5,pbT6,
-    pbStart=$60,pbAutoCor,pbMetro,pbAppend,pbTP
+    pbStart=$70,pbAutoCor,pbMetro,pbAppend,pbTP
   );
 
   { TProphet600Hardware }
@@ -408,11 +408,6 @@ begin
                 else
                   FDisplay[TP600LED(j + i * 8)] := 0;
         end;
-        4:
-        begin
-          // misc out
-          FPICCntComp := FPICCntComp or ((AValue and 8) = 0);
-        end;
       end;
     end
     else
@@ -631,11 +626,15 @@ begin
   if FPICPhase >= 4 * 256 then
   begin
     FPICPhase -= 4 * 256;
-    FPICCtr := (FPICCtr - 1) and $ff;
+
+    FPICCtr := (FPICCtr + 1) and $ff;
   end;
 
-  if (FPICCtr = 255) and ((FIOCSData[4] and 8) <> 0) then
+  if (FPICCtr = 0) and ((FIOCSData[4] and 8) = 0) then
+  begin
     FPICCntComp := True;
+    writeln(FPICPre, ' ', FPICCtr, ' ',  FPICCntComp);
+  end;
 
   // int handling
 

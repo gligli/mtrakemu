@@ -1493,7 +1493,7 @@ object MainForm: TMainForm
       ParentColor = False
     end
     object btAppend: TToggleBox
-      Tag = 99
+      Tag = 115
       Left = 180
       Height = 25
       Top = 147
@@ -1535,7 +1535,7 @@ object MainForm: TMainForm
       ParentColor = False
     end
     object btStart: TToggleBox
-      Tag = 96
+      Tag = 112
       Left = 12
       Height = 25
       Top = 147
@@ -1544,7 +1544,7 @@ object MainForm: TMainForm
       TabOrder = 31
     end
     object btAutoCor: TToggleBox
-      Tag = 97
+      Tag = 113
       Left = 68
       Height = 25
       Top = 147
@@ -1553,7 +1553,7 @@ object MainForm: TMainForm
       TabOrder = 32
     end
     object btMetro: TToggleBox
-      Tag = 98
+      Tag = 114
       Left = 124
       Height = 25
       Top = 147
@@ -1987,7 +1987,7 @@ object MainForm: TMainForm
   end
   object tiTick: TTimer
     Enabled = False
-    Interval = 50
+    Interval = 10
     OnTimer = tiTickTimer
     left = 24
     top = 48
