@@ -347,8 +347,6 @@ begin
   FillChar(FCVValues[pcOsc6], SizeOf(FCVValues), 0);
   FillChar(FKeyStates[0], SizeOf(FKeyStates), 0);
 
-  ButtonStates[pbTP] := True;
-
   FTuneCntDone := False;
   FTuneCntInh := True;
   FTuneCntHi := 0;
@@ -362,7 +360,6 @@ begin
   F7MsInt := False;
   F7MsPhase := 0;
   F7MsPre := 0;
-  FCurTick := 0;
 
   while FACIAQueue.Count > 0 do
     FACIAQueue.Pop;
@@ -495,13 +492,13 @@ begin
         end;
         8:
         begin
-          FTuneCntLo := Integer(AValue and $1f or $01);
+          FTuneCntLo := ((Integer(AValue and $1f) shr 1) + 1) shl 1;
           FTuneCntHi := 0;
           FTuneCntDone := False;
         end;
         $c:
         begin
-          FTuneCntInh := (AValue and 8) <> 0;
+          FTuneCntInh := (AValue and 8) = 0;
         end;
         $e:
         begin
@@ -693,9 +690,9 @@ begin
   // programmable interrupt counter
 
   FPICPhase += ACount;
-  if FPICPhase >= 4 * 256 then
+  if FPICPhase >= 8 * 256 then
   begin
-    FPICPhase -= 4 * 256;
+    FPICPhase -= 8 * 256;
 
     FPICCtr := (FPICCtr + 1) and $ff;
   end;
