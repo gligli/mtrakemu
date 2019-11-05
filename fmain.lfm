@@ -6,7 +6,7 @@ object MainForm: TMainForm
   Caption = 'MultiTrak emulator'
   ClientHeight = 522
   ClientWidth = 1088
-  DoubleBuffered = False
+  DoubleBuffered = True
   Font.CharSet = ANSI_CHARSET
   Font.Height = -11
   Font.Name = 'Tahoma'
@@ -15,8 +15,8 @@ object MainForm: TMainForm
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   ParentDoubleBuffered = False
+  Position = poScreenCenter
   LCLVersion = '2.0.6.0'
-  WindowState = wsMaximized
   object lvCV: TListView
     Left = 280
     Height = 329
@@ -1968,22 +1968,22 @@ object MainForm: TMainForm
     TabOrder = 5
   end
   object btTick: TButton
-    Left = 136
+    Left = 201
     Height = 25
     Top = 8
     Width = 64
     Caption = 'Next tick'
     OnClick = btTickClick
-    TabOrder = 6
+    TabOrder = 7
   end
   object btSave: TButton
-    Left = 200
+    Left = 136
     Height = 25
     Top = 8
     Width = 64
     Caption = 'Save'
     OnClick = btSaveClick
-    TabOrder = 7
+    TabOrder = 6
   end
   object tiTick: TTimer
     Enabled = False

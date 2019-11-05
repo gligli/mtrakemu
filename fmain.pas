@@ -150,6 +150,8 @@ const CTimesRealSpeed=1;
 
 procedure TMainForm.FormCreate(Sender: TObject);
 begin
+  P600Emu := TProphet600Emulator.Create;
+
   Constraints.MinHeight:=Height;
   Constraints.MinWidth:=Width;
 
@@ -164,6 +166,8 @@ end;
 
 procedure TMainForm.FormDestroy(Sender: TObject);
 begin
+  P600Emu.Free;
+
   MidiInput.CloseAll;
 end;
 
@@ -318,30 +322,29 @@ begin
 end;
 
 procedure TMainForm.OnMidi(var AMsg: TMessage);
-var devIndex:Integer;
-    status,data1,data2:Byte;
+const
+  CStatusToByteCount : array[0..$f] of Integer = (-1, -1, -1, -1, -1, -1, -1, -1, 3, 3, 3, 3, 2, 2, 3, 1);
+var
+  devIndex:Integer;
+  status,data1,data2:Byte;
 begin
   devIndex:=AMsg.wParam;
   status:=AMsg.lParam shr 16;
   data2:=AMsg.lParam shr 8;
   data1:=AMsg.lParam;
 
-  // skip active sensing signals from keyboard
-  if status = $FE then Exit;
-
   // print the message log
-  DebugLn(Format( '%s: <Status> %.2x, <Data 1> %.2x <Data 2> %.2x',
-    [ MidiInput.Devices[devIndex], status, data1, data2 ] ));
+  DebugLn(Format( '%s: <Status> %.2x, <Data 1> %.2x <Data 2> %.2x', [ MidiInput.Devices[devIndex], status, data1, data2 ] ));
 
-  //TODO:
-  //if data1<61 then
-  //begin
-  //  if status=$90 then
-  //    P600Emu.HW.KeyStates[data1]:=True
-  //  else if status=$80 then
-  //    P600Emu.HW.KeyStates[data1]:=False;
-  //end;
-  //
+  if CStatusToByteCount[status shr 4] >= 1 then
+    P600Emu.HW.SendMIDIByte(status);
+
+  if CStatusToByteCount[status shr 4] >= 2 then
+    P600Emu.HW.SendMIDIByte(data1);
+
+  if CStatusToByteCount[status shr 4] >= 3 then
+    P600Emu.HW.SendMIDIByte(data2);
+
   AMsg.Result:=0;
 end;
 

@@ -5,7 +5,7 @@ unit p600emuclasses;
 interface
 
 uses
-  Classes, SysUtils, raze, LazLogger, math, windows;
+  Classes, SysUtils, raze, LazLogger, math, windows, contnrs;
 
 const
   cTickMilliseconds = 8;
@@ -54,7 +54,7 @@ type
 
   { TProphet600Hardware }
 
-  TProphet600Hardware=record
+  TProphet600Hardware=class
   private
     FCurTick: Integer;
 
@@ -81,6 +81,11 @@ type
     FCVValues:array[TP600CV] of Integer;
     FKeyStates:array[0..127] of Boolean;
 
+    FACIAQueue: TQueue;
+    FACIAControl: Byte;
+    FACIAInt: Boolean;
+    FACIAXmitData, FACIARecvData, FACIACtr: Integer;
+
     function ADCCompare:Boolean;
     procedure UpdateCVs;
 
@@ -95,6 +100,9 @@ type
     procedure SetButtonStates(AButton: TP600Button; AValue: Boolean);
     procedure SetPotValues(APot: TP600Pot; AValue: Word);
   public
+    constructor Create;
+    destructor Destroy; override;
+
     procedure Initialize;
 
     procedure LoadRomFromFile(AFileName:String);
@@ -104,6 +112,7 @@ type
     function Read(AIsIO:Boolean;AAddress:Word):Byte;
 
     procedure RunCycles(ACount:Integer); // run ACount 4Mhz cycles
+    procedure SendMIDIByte(AValue: Byte);
 
     property PotValues[APot:TP600Pot]:Word read GetPotValues write SetPotValues;
     property SevenSegment[AIndex:Integer]:Byte read GetSevenSegment;
@@ -120,10 +129,13 @@ type
 
   { TProphet600Emulator }
 
-  TProphet600Emulator=record
+  TProphet600Emulator=class
   private
     FHW:TProphet600Hardware;
   public
+    constructor Create;
+    destructor Destroy; override;
+
     procedure Initialize;
     procedure SaveRamToFile;
 
@@ -176,6 +188,18 @@ begin
 end;
 
 { TProphet600Emulator }
+
+constructor TProphet600Emulator.Create;
+begin
+  FHW := TProphet600Hardware.Create;
+end;
+
+destructor TProphet600Emulator.Destroy;
+begin
+  FHW.Free;
+
+  inherited Destroy;
+end;
 
 procedure TProphet600Emulator.Initialize;
 begin
@@ -302,6 +326,18 @@ begin
   FPotValues[APot]:=AValue;
 end;
 
+constructor TProphet600Hardware.Create;
+begin
+  FACIAQueue := TQueue.Create;
+end;
+
+destructor TProphet600Hardware.Destroy;
+begin
+  FACIAQueue.Free;
+
+  inherited Destroy;
+end;
+
 procedure TProphet600Hardware.Initialize;
 begin
   FCurTick := 0;
@@ -327,6 +363,12 @@ begin
   F7MsPhase := 0;
   F7MsPre := 0;
   FCurTick := 0;
+
+  while FACIAQueue.Count > 0 do
+    FACIAQueue.Pop;
+  FACIACtr := 0;
+  FACIAXmitData := -1;
+  FACIARecvData := -1;
 end;
 
 procedure TProphet600Hardware.LoadRomFromFile(AFileName: String);
@@ -374,13 +416,25 @@ var
 begin
   if not AIsIO then
   begin
-    AAddress := AAddress and $7fff;
-
     case AAddress of
       $0000..$3fff:
-        ;//Assert(False);
+        Assert(False);
       $4000..$67ff:
         FRam[AAddress and $3fff] := AValue;
+      $c000..$dfff:
+      begin
+        case AAddress and $03 of
+          0:
+          begin
+            FACIAControl := AValue;
+          end;
+          1:
+          begin
+            FACIAXmitData := AValue;
+            FACIAInt := False;
+          end;
+        end;
+      end;
     end;
   end
   else
@@ -473,13 +527,26 @@ begin
 
   if not AIsIO then
   begin
-    AAddress := AAddress and $7fff;
-
-    case AAddress and $7fff of
+    case AAddress of
       $0000..$3fff:
         Result := FRom[AAddress];
       $4000..$67ff:
         Result := FRam[AAddress and $3fff];
+      $c000..$dfff:
+      begin
+        case AAddress and $03 of
+          2:
+          begin
+            Result := (Ord(FACIARecvData >= 0) shl 0) or (Ord(FACIAXmitData < 0) shl 1) or (Ord(FACIAInt) shl 7) or $0c;
+          end;
+          3:
+          begin
+            Result := abs(FACIARecvData);
+            FACIARecvData := -abs(FACIARecvData);
+            FACIAInt := False;
+          end;
+        end;
+      end;
     end;
   end
   else
@@ -531,11 +598,14 @@ begin
 end;
 
 procedure TProphet600Hardware.RunCycles(ACount: Integer);
-var cv,cvHi,cvFil:TP600CV;
-    cvV:Integer;
-    i, cycles:Integer;
-    ratio:Double;
-    l: TP600LED;
+const
+  CACIACRCR: array[0..3] of Integer  = (1, 16, 64, 0);
+var
+  cv,cvHi,cvFil:TP600CV;
+  cvV:Integer;
+  i, cycles:Integer;
+  ratio:Double;
+  l: TP600LED;
 begin
   FCurTick += ACount;
 
@@ -631,10 +701,7 @@ begin
   end;
 
   if (FPICCtr = 0) and ((FIOCSData[4] and 8) = 0) then
-  begin
     FPICCntComp := True;
-    writeln(FPICPre, ' ', FPICCtr, ' ',  FPICCntComp);
-  end;
 
   // int handling
 
@@ -643,6 +710,28 @@ begin
   else
     z80_lower_IRQ;
 
+  // ACIA handling
+
+  Inc(FACIACtr, ACount);
+  if FACIACtr > 8 * CACIACRCR[FACIAControl shr 6] then
+  begin
+    FACIACtr := 0;
+
+    // TODO: Send byte
+    FACIAXmitData := -1;
+
+    if FACIAQueue.Count > 0  then
+    begin
+      FACIAInt := (FACIAControl and $80) <> 0;
+      FACIARecvData := IntPtr(FACIAQueue.Pop);
+      z80_cause_NMI;
+    end;
+  end;
+end;
+
+procedure TProphet600Hardware.SendMIDIByte(AValue: Byte);
+begin
+  FACIAQueue.Push(Pointer(AValue));
 end;
 
 end.
