@@ -4,13 +4,13 @@
     <PathDelim Value="\"/>
     <Version Value="11"/>
     <BuildModes Active="Release"/>
-    <Units Count="22">
+    <Units Count="21">
       <Unit0>
         <Filename Value="p600emu.lpr"/>
         <IsPartOfProject Value="True"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="104" Y="21"/>
-        <UsageCount Value="196"/>
+        <UsageCount Value="198"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit0>
       <Unit1>
@@ -20,10 +20,11 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="FMain"/>
-        <EditorIndex Value="-1"/>
-        <TopLine Value="258"/>
-        <CursorPos X="77" Y="300"/>
-        <UsageCount Value="196"/>
+        <EditorIndex Value="1"/>
+        <TopLine Value="264"/>
+        <CursorPos X="54" Y="311"/>
+        <UsageCount Value="198"/>
+        <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit1>
       <Unit2>
@@ -32,19 +33,19 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="9"/>
         <CursorPos X="102" Y="59"/>
-        <UsageCount Value="196"/>
+        <UsageCount Value="198"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit2>
       <Unit3>
         <Filename Value="p600emuclasses.pas"/>
         <IsPartOfProject Value="True"/>
         <IsVisibleTab Value="True"/>
-        <TopLine Value="133"/>
-        <CursorPos X="82" Y="148"/>
-        <UsageCount Value="196"/>
+        <TopLine Value="254"/>
+        <CursorPos X="60" Y="275"/>
+        <UsageCount Value="198"/>
         <Bookmarks Count="2">
-          <Item0 Y="446" ID="2"/>
-          <Item1 X="11" Y="265" ID="1"/>
+          <Item0 Y="451" ID="2"/>
+          <Item1 Y="265" ID="1"/>
         </Bookmarks>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
@@ -55,7 +56,7 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="201"/>
         <CursorPos X="41" Y="230"/>
-        <UsageCount Value="179"/>
+        <UsageCount Value="181"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit4>
       <Unit5>
@@ -67,7 +68,7 @@
         <UnitName Value="c7Seg"/>
         <EditorIndex Value="-1"/>
         <CursorPos X="18" Y="9"/>
-        <UsageCount Value="176"/>
+        <UsageCount Value="178"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit5>
       <Unit6>
@@ -111,195 +112,184 @@
         <UsageCount Value="6"/>
       </Unit11>
       <Unit12>
-        <Filename Value="C:\lazarus\lcl\lclproc.pas"/>
-        <UnitName Value="LCLProc"/>
-        <TopLine Value="835"/>
-        <CursorPos Y="865"/>
-        <UsageCount Value="0"/>
-      </Unit12>
-      <Unit13>
         <Filename Value="C:\lazarus\components\lazutils\LazLoggerIntf.inc"/>
         <CursorPos X="26" Y="29"/>
         <UsageCount Value="9"/>
-      </Unit13>
-      <Unit14>
+      </Unit12>
+      <Unit13>
         <Filename Value="..\p600mockup\p600mockup.c"/>
         <TopLine Value="40"/>
         <CursorPos Y="73"/>
         <UsageCount Value="9"/>
         <DefaultSyntaxHighlighter Value="C++"/>
-      </Unit14>
-      <Unit15>
+      </Unit13>
+      <Unit14>
         <Filename Value="C:\lazarus\lcl\include\control.inc"/>
         <TopLine Value="2689"/>
         <CursorPos X="46" Y="2730"/>
         <UsageCount Value="9"/>
-      </Unit15>
-      <Unit16>
+      </Unit14>
+      <Unit15>
         <Filename Value="..\common\adsr.c"/>
         <TopLine Value="61"/>
         <CursorPos X="66" Y="155"/>
         <UsageCount Value="9"/>
         <DefaultSyntaxHighlighter Value="C++"/>
-      </Unit16>
-      <Unit17>
+      </Unit15>
+      <Unit16>
         <Filename Value="C:\lazarus\fpc\3.0.4\source\packages\fcl-base\src\contnrs.pp"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="108"/>
         <CursorPos X="3" Y="167"/>
         <UsageCount Value="17"/>
-      </Unit17>
-      <Unit18>
+      </Unit16>
+      <Unit17>
         <Filename Value="C:\lazarus\fpc\3.0.4\source\rtl\inc\systemh.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="764"/>
         <CursorPos X="10" Y="829"/>
         <UsageCount Value="14"/>
-      </Unit18>
-      <Unit19>
+      </Unit17>
+      <Unit18>
         <Filename Value="C:\lazarus\lcl\forms.pp"/>
         <UnitName Value="Forms"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="523"/>
         <CursorPos X="15" Y="558"/>
         <UsageCount Value="8"/>
-      </Unit19>
-      <Unit20>
+      </Unit18>
+      <Unit19>
         <Filename Value="C:\lazarus\fpc\3.0.4\source\rtl\inc\system.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="368"/>
         <CursorPos X="3" Y="370"/>
         <UsageCount Value="11"/>
-      </Unit20>
-      <Unit21>
+      </Unit19>
+      <Unit20>
         <Filename Value="C:\lazarus\fpc\3.0.4\source\rtl\inc\generic.inc"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="2028"/>
         <CursorPos X="5" Y="2030"/>
         <UsageCount Value="11"/>
-      </Unit21>
+      </Unit20>
     </Units>
-    <JumpHistory Count="30" HistoryIndex="29">
+    <JumpHistory Count="29" HistoryIndex="28">
       <Position1>
         <Filename Value="p600emuclasses.pas"/>
-        <Caret Line="288" Column="21" TopLine="248"/>
+        <Caret Line="114" Column="15" TopLine="55"/>
       </Position1>
       <Position2>
         <Filename Value="p600emuclasses.pas"/>
-        <Caret Line="114" Column="14" TopLine="61"/>
+        <Caret Line="90" Column="15" TopLine="55"/>
       </Position2>
       <Position3>
         <Filename Value="p600emuclasses.pas"/>
-        <Caret Line="675" Column="7" TopLine="627"/>
+        <Caret Line="114" Column="22" TopLine="79"/>
       </Position3>
       <Position4>
         <Filename Value="p600emuclasses.pas"/>
-        <Caret Line="586" Column="22" TopLine="551"/>
+        <Caret Line="117" Column="14" TopLine="82"/>
       </Position4>
       <Position5>
         <Filename Value="p600emuclasses.pas"/>
-        <Caret Line="496" Column="11" TopLine="461"/>
+        <Caret Line="101" Column="15" TopLine="82"/>
       </Position5>
       <Position6>
         <Filename Value="p600emuclasses.pas"/>
-        <Caret Line="352" Column="3" TopLine="317"/>
+        <Caret Line="326" Column="13" TopLine="324"/>
       </Position6>
       <Position7>
         <Filename Value="p600emuclasses.pas"/>
-        <Caret Line="63" Column="17" TopLine="28"/>
+        <Caret Line="252" Column="22" TopLine="216"/>
       </Position7>
       <Position8>
         <Filename Value="p600emuclasses.pas"/>
-        <Caret Line="274" Column="94" TopLine="266"/>
+        <Caret Line="112" Column="14" TopLine="54"/>
       </Position8>
       <Position9>
         <Filename Value="p600emuclasses.pas"/>
-        <Caret Line="111" Column="9" TopLine="60"/>
+        <Caret Line="582" Column="32" TopLine="556"/>
       </Position9>
       <Position10>
         <Filename Value="p600emuclasses.pas"/>
-        <Caret Line="506" Column="49" TopLine="452"/>
+        <Caret Line="111" Column="14" TopLine="77"/>
       </Position10>
       <Position11>
         <Filename Value="p600emuclasses.pas"/>
-        <Caret Line="112" Column="15" TopLine="76"/>
+        <Caret Line="505" Column="20" TopLine="463"/>
       </Position11>
       <Position12>
         <Filename Value="p600emuclasses.pas"/>
-        <Caret Line="582" Column="37" TopLine="544"/>
+        <Caret Line="112" Column="15" TopLine="76"/>
       </Position12>
       <Position13>
         <Filename Value="p600emuclasses.pas"/>
-        <Caret Line="111" Column="14" TopLine="77"/>
+        <Caret Line="582" Column="37" TopLine="544"/>
       </Position13>
       <Position14>
         <Filename Value="p600emuclasses.pas"/>
-        <Caret Line="505" Column="26" TopLine="451"/>
+        <Caret Line="111" Column="21" TopLine="71"/>
       </Position14>
       <Position15>
         <Filename Value="p600emuclasses.pas"/>
-        <Caret Line="112" Column="15" TopLine="76"/>
+        <Caret Line="414" Column="3" TopLine="409"/>
       </Position15>
       <Position16>
         <Filename Value="p600emuclasses.pas"/>
-        <Caret Line="575" TopLine="538"/>
+        <Caret Line="112" Column="15" TopLine="76"/>
       </Position16>
       <Position17>
         <Filename Value="p600emuclasses.pas"/>
-        <Caret Line="114" Column="14" TopLine="77"/>
+        <Caret Line="535" Column="28" TopLine="514"/>
       </Position17>
       <Position18>
         <Filename Value="p600emuclasses.pas"/>
-        <Caret Line="675" Column="17" TopLine="627"/>
+        <Caret Line="114" Column="14" TopLine="77"/>
       </Position18>
       <Position19>
         <Filename Value="p600emuclasses.pas"/>
-        <Caret Line="352" Column="3" TopLine="317"/>
+        <Caret Line="644" Column="29" TopLine="617"/>
       </Position19>
       <Position20>
         <Filename Value="p600emuclasses.pas"/>
-        <Caret Line="496" Column="11" TopLine="449"/>
+        <Caret Line="111" Column="17" TopLine="73"/>
       </Position20>
       <Position21>
         <Filename Value="p600emuclasses.pas"/>
-        <Caret Line="112" Column="15" TopLine="76"/>
+        <Caret Line="414" Column="3" TopLine="409"/>
       </Position21>
       <Position22>
         <Filename Value="p600emuclasses.pas"/>
-        <Caret Line="114" Column="14" TopLine="76"/>
+        <Caret Line="112" Column="15" TopLine="76"/>
       </Position22>
       <Position23>
         <Filename Value="p600emuclasses.pas"/>
-        <Caret Line="666" Column="23" TopLine="623"/>
+        <Caret Line="523" Column="3" TopLine="520"/>
       </Position23>
       <Position24>
         <Filename Value="p600emuclasses.pas"/>
-        <Caret Line="353" Column="3" TopLine="318"/>
+        <Caret Line="90" Column="14" TopLine="77"/>
       </Position24>
       <Position25>
         <Filename Value="p600emuclasses.pas"/>
-        <Caret Line="114" Column="15" TopLine="71"/>
+        <Caret Line="285" Column="28" TopLine="254"/>
       </Position25>
       <Position26>
         <Filename Value="p600emuclasses.pas"/>
-        <Caret Line="674" Column="28" TopLine="641"/>
+        <Caret Line="94" Column="14" TopLine="61"/>
       </Position26>
       <Position27>
         <Filename Value="p600emuclasses.pas"/>
-        <Caret Line="351" Column="3" TopLine="316"/>
+        <Caret Line="114" Column="20" TopLine="61"/>
       </Position27>
       <Position28>
         <Filename Value="p600emuclasses.pas"/>
-        <Caret Line="501" Column="42" TopLine="466"/>
+        <Caret Line="664" Column="38" TopLine="634"/>
       </Position28>
       <Position29>
         <Filename Value="p600emuclasses.pas"/>
-        <Caret Line="114" Column="15" TopLine="76"/>
+        <Caret Line="90" Column="15" TopLine="79"/>
       </Position29>
-      <Position30>
-        <Filename Value="p600emuclasses.pas"/>
-        <Caret Line="655" Column="19" TopLine="635"/>
-      </Position30>
     </JumpHistory>
     <RunParams>
       <FormatVersion Value="2"/>

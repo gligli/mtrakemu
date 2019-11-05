@@ -121,6 +121,7 @@ type
     procedure btTickClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
+    procedure kPitchMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
     procedure kPrmValMouseEnter(Sender: TObject);
     procedure kPrmValMouseLeave(Sender: TObject);
     procedure lbxInputDevicesClickCheck(Sender: TObject);
@@ -169,6 +170,11 @@ begin
   P600Emu.Free;
 
   MidiInput.CloseAll;
+end;
+
+procedure TMainForm.kPitchMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
+begin
+  kPrmValMouseEnter(Sender);
 end;
 
 procedure TMainForm.kPrmValMouseEnter(Sender: TObject);
@@ -292,12 +298,12 @@ begin
     ssLeft.Value:=SevenSegment[0];
     ssRight.Value:=SevenSegment[1];
 
-    PotValues[ppTune]:=round(kMasterTune.Position);
-    PotValues[ppValue]:=round(kPrmVal.Position);
-    PotValues[ppSpeed]:=round(kSpeed.Position);
-    PotValues[ppTrkVol]:=round(kTrkVol.Position);
-    PotValues[ppMod]:=round(kMod.Position);
-    PotValues[ppPitch]:=round(kPitch.Position);
+    PotValues[ppTune]:=round(kMasterTune.Position) shl 8;
+    PotValues[ppValue]:=round(kPrmVal.Position) shl 8;
+    PotValues[ppSpeed]:=round(kSpeed.Position) shl 8;
+    PotValues[ppTrkVol]:=round(kTrkVol.Position) shl 8;
+    PotValues[ppMod]:=round(kMod.Position) shl 8;
+    PotValues[ppPitch]:=round(kPitch.Position) shl 8;
 
     lvCV.Invalidate;
     lvGates.Invalidate;

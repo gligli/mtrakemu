@@ -145,7 +145,7 @@ type
   end;
 
 const
-  CABCToPot : array[0..7] of TP600Pot = (ppDACP, ppTrkVol, ppMod, ppSpeed, ppDACM, ppValue, ppPitch, ppTune);
+  CABCToPot : array[0..7] of TP600Pot = (ppDACM, ppTrkVol, ppMod, ppSpeed, ppDACP, ppValue, ppPitch, ppTune);
 
 var
   P600Emu:TProphet600Emulator;
@@ -260,9 +260,9 @@ begin
 
   dv := 65536;
   if CABCToPot[FSHAD shr 5] = ppDACM then
-    dv := -FDACValue
+    dv := -Integer(FDACValue)
   else if CABCToPot[FSHAD shr 5] = ppDACP then
-    dv := FDACValue;
+    dv := Integer(FDACValue);
 
   for i := 0 to cP600VoiceCount - 1 do
     if (FSHEnable and (1 shl i)) = 0 then
@@ -271,7 +271,12 @@ end;
 
 function TProphet600Hardware.GetCVHertz(ACV: TP600CV): Double;
 begin
-  Result := ifthen(TP600CV(Ord(ACV) and $07) = pcFil6, 1300.0 * power(2.0, CVVolts[ACV] / 0.38), 500.0 * power(2.0, CVVolts[ACV] / 0.75));
+  if TP600CV(Ord(ACV) and $07) = pcFil6 then
+    Result := 1300.0 * power(2.0, -CVVolts[ACV] / 0.375 / 4.0)
+  else
+    Result := 500.0 * power(2.0, -CVVolts[ACV] / 0.75);
+
+  Result := math.min(Result, 35000.0);
 end;
 
 function TProphet600Hardware.GetGateValues(AGate: TP600Gate): Boolean;
@@ -492,7 +497,7 @@ begin
         end;
         8:
         begin
-          FTuneCntLo := ((Integer(AValue and $1f) shr 1) + 1) shl 1;
+          FTuneCntLo := (Integer(AValue and $1f) shr 1) + 1;
           FTuneCntHi := 0;
           FTuneCntDone := False;
         end;
@@ -628,7 +633,7 @@ begin
     for i := 0 to cP600VoiceCount - 1 do
     begin
       cv := TP600CV(Ord(pcAmp6) + i * abs(Ord(pcOsc5) - Ord(pcOsc6)));
-      if CVValues[cv] > -8 * 4096 div 16 then
+      if CVValues[cv] < 8 * 4096 div 16 then
         Continue;
 
       // osc
@@ -642,7 +647,7 @@ begin
 
       // filter self oscillation
       cv := TP600CV(Ord(pcRes6) + i * abs(Ord(pcOsc5) - Ord(pcOsc6)));
-      if CVValues[cv] < -8 * 4096 div 16 then
+      if CVValues[cv] > 8 * 4096 div 16 then
       begin
         cv := TP600CV(Ord(pcFil6) + i * abs(Ord(pcOsc5) - Ord(pcOsc6)));
         if CVValues[cv] > cvV then

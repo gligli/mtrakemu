@@ -98,7 +98,7 @@ object MainForm: TMainForm
       Height = 64
       Top = 12
       Width = 64
-      Max = 65535
+      Max = 255
       MaxAngle = 3300
       Min = 0
       MinAngle = 300
@@ -251,9 +251,9 @@ object MainForm: TMainForm
         0000000000000000000000000000000000000000000000000000000000000000
         000000000000000000000000000000000000
       }
-      Position = 32767
+      Position = 128
       TicksMargin = 16
-      LTicks = 10
+      LTicks = 8
       LTicksSize = 10
       LTicksColor = clWhite
       STicks = 0
@@ -268,6 +268,7 @@ object MainForm: TMainForm
       ValuesFont.Pitch = fpVariable
       ValuesFont.Quality = fqDraft
       Transparent = False
+      OnMouseMove = kPitchMouseMove
       Color = clBlack
       ParentColor = False
       OnMouseEnter = kPrmValMouseEnter
@@ -346,7 +347,7 @@ object MainForm: TMainForm
       Height = 64
       Top = 12
       Width = 64
-      Max = 65535
+      Max = 255
       MaxAngle = 3300
       Min = 0
       MinAngle = 300
@@ -499,9 +500,9 @@ object MainForm: TMainForm
         0000000000000000000000000000000000000000000000000000000000000000
         000000000000000000000000000000000000
       }
-      Position = 32767
+      Position = 0
       TicksMargin = 16
-      LTicks = 10
+      LTicks = 8
       LTicksSize = 10
       LTicksColor = clWhite
       STicks = 0
@@ -516,6 +517,7 @@ object MainForm: TMainForm
       ValuesFont.Pitch = fpVariable
       ValuesFont.Quality = fqDraft
       Transparent = False
+      OnMouseMove = kPitchMouseMove
       Color = clBlack
       ParentColor = False
       OnMouseEnter = kPrmValMouseEnter
@@ -526,7 +528,7 @@ object MainForm: TMainForm
       Height = 64
       Top = 11
       Width = 64
-      Max = 65535
+      Max = 255
       MaxAngle = 3300
       Min = 0
       MinAngle = 300
@@ -679,9 +681,9 @@ object MainForm: TMainForm
         0000000000000000000000000000000000000000000000000000000000000000
         000000000000000000000000000000000000
       }
-      Position = 32767
+      Position = 0
       TicksMargin = 16
-      LTicks = 10
+      LTicks = 8
       LTicksSize = 10
       LTicksColor = clWhite
       STicks = 0
@@ -696,6 +698,7 @@ object MainForm: TMainForm
       ValuesFont.Pitch = fpVariable
       ValuesFont.Quality = fqDraft
       Transparent = False
+      OnMouseMove = kPitchMouseMove
       Color = clBlack
       ParentColor = False
       OnMouseEnter = kPrmValMouseEnter
@@ -706,7 +709,7 @@ object MainForm: TMainForm
       Height = 64
       Top = 108
       Width = 64
-      Max = 65535
+      Max = 255
       MaxAngle = 3300
       Min = 0
       MinAngle = 300
@@ -859,9 +862,9 @@ object MainForm: TMainForm
         0000000000000000000000000000000000000000000000000000000000000000
         000000000000000000000000000000000000
       }
-      Position = 32767
+      Position = 128
       TicksMargin = 16
-      LTicks = 10
+      LTicks = 8
       LTicksSize = 10
       LTicksColor = clWhite
       STicks = 0
@@ -876,6 +879,7 @@ object MainForm: TMainForm
       ValuesFont.Pitch = fpVariable
       ValuesFont.Quality = fqDraft
       Transparent = False
+      OnMouseMove = kPitchMouseMove
       Color = clBlack
       ParentColor = False
       OnMouseEnter = kPrmValMouseEnter
@@ -1566,7 +1570,7 @@ object MainForm: TMainForm
       Height = 64
       Top = 20
       Width = 64
-      Max = 65535
+      Max = 255
       MaxAngle = 3300
       Min = 0
       MinAngle = 300
@@ -1719,9 +1723,9 @@ object MainForm: TMainForm
         0000000000000000000000000000000000000000000000000000000000000000
         000000000000000000000000000000000000
       }
-      Position = 32767
+      Position = 128
       TicksMargin = 16
-      LTicks = 10
+      LTicks = 8
       LTicksSize = 10
       LTicksColor = clWhite
       STicks = 0
@@ -1736,6 +1740,7 @@ object MainForm: TMainForm
       ValuesFont.Pitch = fpVariable
       ValuesFont.Quality = fqDraft
       Transparent = False
+      OnMouseMove = kPitchMouseMove
       Color = clBlack
       ParentColor = False
       OnMouseEnter = kPrmValMouseEnter
@@ -1746,7 +1751,7 @@ object MainForm: TMainForm
       Height = 64
       Top = 21
       Width = 64
-      Max = 65535
+      Max = 255
       MaxAngle = 3300
       Min = 0
       MinAngle = 300
@@ -1901,7 +1906,7 @@ object MainForm: TMainForm
       }
       Position = 0
       TicksMargin = 16
-      LTicks = 10
+      LTicks = 8
       LTicksSize = 10
       LTicksColor = clWhite
       STicks = 0
@@ -1916,6 +1921,7 @@ object MainForm: TMainForm
       ValuesFont.Pitch = fpVariable
       ValuesFont.Quality = fqDraft
       Transparent = False
+      OnMouseMove = kPitchMouseMove
       Color = clBlack
       ParentColor = False
       OnMouseEnter = kPrmValMouseEnter
