@@ -199,9 +199,21 @@ begin
 end;
 
 procedure TMainForm.lvCVData(Sender: TObject; Item: TListItem);
-var cv:TP600CV;
+const
+  CIndexToCV : array[0..6*8 - 1] of TP600CV = (
+    pcOsc1,pcOsc2,pcOsc3,pcOsc4,pcOsc5,pcOsc6,
+    pcFil1,pcFil2,pcFil3,pcFil4,pcFil5,pcFil6,
+    pcAmp1,pcAmp2,pcAmp3,pcAmp4,pcAmp5,pcAmp6,
+    pcRes1,pcRes2,pcRes3,pcRes4,pcRes5,pcRes6,
+    pcMix1,pcMix2,pcMix3,pcMix4,pcMix5,pcMix6,
+    pcMod1,pcMod2,pcMod3,pcMod4,pcMod5,pcMod6,
+    pcPW1,pcPW2,pcPW3,pcPW4,pcPW5,pcPW6,
+    pcShape1,pcShape2,pcShape3,pcShape4,pcShape5,pcShape6
+  );
+var
+  cv:TP600CV;
 begin
-  cv:=TP600CV(Item.Index);
+  cv:=CIndexToCV[Item.Index];
 
   with P600Emu.HW do
   begin
@@ -226,6 +238,13 @@ end;
 
 procedure TMainForm.tbRunChange(Sender: TObject);
 begin
+  //HACK: open MIDI Yoke 2 on my PC...
+  if (lbxInputDevices.Count >= 2) and AnsiContainsText(lbxInputDevices.Items[1], 'Yoke') then
+  begin
+    lbxInputDevices.Checked[1] := True;
+    MidiInput.Open(1);
+  end;
+
   tiTick.Enabled:=tbRun.Checked;
 end;
 
