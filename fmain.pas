@@ -7,7 +7,7 @@ interface
 uses
   Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, StdCtrls,
   ExtCtrls, ComCtrls, ValEdit, CheckLst, p600emuclasses, ueled, uEKnob,
-  LazLogger, windows, strutils, typinfo, Midi, c7Seg, syncobjs;
+  LazLogger, windows, strutils, typinfo, Midi, c7Seg, syncobjs, Types;
 
 const
     WM_MIDI = WM_USER + 42;
@@ -61,6 +61,7 @@ type
     kPitch: TuEKnob;
     l0: TuELED;
     l1: TuELED;
+    lbxOutputDevices: TCheckListBox;
     lUD: TuELED;
     lAppend: TuELED;
     lAssign: TuELED;
@@ -122,6 +123,8 @@ type
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure kPitchMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
+    procedure kPitchMouseWheel(Sender: TObject; Shift: TShiftState; WheelDelta: Integer; MousePos: TPoint;
+      var Handled: Boolean);
     procedure kPrmValMouseEnter(Sender: TObject);
     procedure kPrmValMouseLeave(Sender: TObject);
     procedure lbxInputDevicesClickCheck(Sender: TObject);
@@ -157,6 +160,7 @@ begin
   Constraints.MinWidth:=Width;
 
   lbxInputDevices.Items.Assign( MidiInput.Devices );
+  lbxOutputDevices.Items.Assign( MidiOutput.Devices );
   MidiInput.OnMidiData := @DoMidiInData;
 
   btInit.Click;
@@ -173,6 +177,12 @@ begin
 end;
 
 procedure TMainForm.kPitchMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
+begin
+  kPrmValMouseEnter(Sender);
+end;
+
+procedure TMainForm.kPitchMouseWheel(Sender: TObject; Shift: TShiftState; WheelDelta: Integer; MousePos: TPoint;
+  var Handled: Boolean);
 begin
   kPrmValMouseEnter(Sender);
 end;
@@ -244,6 +254,11 @@ begin
     lbxInputDevices.Checked[1] := True;
     MidiInput.Open(1);
   end;
+  if (lbxInputDevices.Count >= 3) and AnsiContainsText(lbxInputDevices.Items[1], 'Yoke') then
+  begin
+    lbxOutputDevices.Checked[2] := True;
+    MidiOutput.Open(2);
+  end;
 
   tiTick.Enabled:=tbRun.Checked;
 end;
@@ -274,6 +289,12 @@ begin
 end;
 
 procedure TMainForm.UpdateState;
+
+  function PotToValue(APot: Double): Integer;
+  begin
+    Result := round(APot * 5.0 / 4.0 * 256.0);
+  end;
+
 var cv:TP600CV;
     gt:TP600Gate;
     c: TToggleBox;
@@ -317,12 +338,12 @@ begin
     ssLeft.Value:=SevenSegment[0];
     ssRight.Value:=SevenSegment[1];
 
-    PotValues[ppTune]:=round(kMasterTune.Position) shl 8;
-    PotValues[ppValue]:=round(kPrmVal.Position) shl 8;
-    PotValues[ppSpeed]:=round(kSpeed.Position) shl 8;
-    PotValues[ppTrkVol]:=round(kTrkVol.Position) shl 8;
-    PotValues[ppMod]:=round(kMod.Position) shl 8;
-    PotValues[ppPitch]:=round(kPitch.Position) shl 8;
+    PotValues[ppTune]:=PotToValue(kMasterTune.Position);
+    PotValues[ppValue]:=PotToValue(kPrmVal.Position);
+    PotValues[ppSpeed]:=PotToValue(kSpeed.Position);
+    PotValues[ppTrkVol]:=PotToValue(kTrkVol.Position);
+    PotValues[ppMod]:=PotToValue(kMod.Position);
+    PotValues[ppPitch]:=PotToValue(kPitch.Position);
 
     lvCV.Invalidate;
     lvGates.Invalidate;

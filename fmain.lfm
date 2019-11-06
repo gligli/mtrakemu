@@ -53,10 +53,9 @@ object MainForm: TMainForm
   end
   object lbxInputDevices: TCheckListBox
     Left = 8
-    Height = 272
+    Height = 128
     Top = 40
     Width = 257
-    Anchors = [akTop, akLeft, akBottom]
     ItemHeight = 0
     OnClickCheck = lbxInputDevicesClickCheck
     TabOrder = 1
@@ -79,7 +78,7 @@ object MainForm: TMainForm
     Width = 64
     Caption = 'Run'
     OnChange = tbRunChange
-    TabOrder = 2
+    TabOrder = 3
   end
   object pnP600: TPanel
     Left = 0
@@ -92,13 +91,13 @@ object MainForm: TMainForm
     ClientWidth = 1088
     Color = clBlack
     ParentColor = False
-    TabOrder = 3
+    TabOrder = 4
     object kMasterTune: TuEKnob
       Left = 1008
       Height = 64
       Top = 12
       Width = 64
-      Max = 255
+      Max = 212
       MaxAngle = 3300
       Min = 0
       MinAngle = 300
@@ -251,7 +250,7 @@ object MainForm: TMainForm
         0000000000000000000000000000000000000000000000000000000000000000
         000000000000000000000000000000000000
       }
-      Position = 128
+      Position = 106
       TicksMargin = 16
       LTicks = 8
       LTicksSize = 10
@@ -273,6 +272,7 @@ object MainForm: TMainForm
       ParentColor = False
       OnMouseEnter = kPrmValMouseEnter
       OnMouseLeave = kPrmValMouseLeave
+      OnMouseWheel = kPitchMouseWheel
     end
     object btFromTape: TToggleBox
       Tag = 52
@@ -347,7 +347,7 @@ object MainForm: TMainForm
       Height = 64
       Top = 12
       Width = 64
-      Max = 255
+      Max = 212
       MaxAngle = 3300
       Min = 0
       MinAngle = 300
@@ -522,13 +522,14 @@ object MainForm: TMainForm
       ParentColor = False
       OnMouseEnter = kPrmValMouseEnter
       OnMouseLeave = kPrmValMouseLeave
+      OnMouseWheel = kPitchMouseWheel
     end
     object kTrkVol: TuEKnob
       Left = 448
       Height = 64
       Top = 11
       Width = 64
-      Max = 255
+      Max = 212
       MaxAngle = 3300
       Min = 0
       MinAngle = 300
@@ -703,13 +704,14 @@ object MainForm: TMainForm
       ParentColor = False
       OnMouseEnter = kPrmValMouseEnter
       OnMouseLeave = kPrmValMouseLeave
+      OnMouseWheel = kPitchMouseWheel
     end
     object kSpeed: TuEKnob
       Left = 448
       Height = 64
       Top = 108
       Width = 64
-      Max = 255
+      Max = 212
       MaxAngle = 3300
       Min = 0
       MinAngle = 300
@@ -862,7 +864,7 @@ object MainForm: TMainForm
         0000000000000000000000000000000000000000000000000000000000000000
         000000000000000000000000000000000000
       }
-      Position = 128
+      Position = 106
       TicksMargin = 16
       LTicks = 8
       LTicksSize = 10
@@ -884,6 +886,7 @@ object MainForm: TMainForm
       ParentColor = False
       OnMouseEnter = kPrmValMouseEnter
       OnMouseLeave = kPrmValMouseLeave
+      OnMouseWheel = kPitchMouseWheel
     end
     object bt1: TToggleBox
       Tag = 1
@@ -1570,7 +1573,7 @@ object MainForm: TMainForm
       Height = 64
       Top = 20
       Width = 64
-      Max = 255
+      Max = 167
       MaxAngle = 3300
       Min = 0
       MinAngle = 300
@@ -1723,7 +1726,7 @@ object MainForm: TMainForm
         0000000000000000000000000000000000000000000000000000000000000000
         000000000000000000000000000000000000
       }
-      Position = 128
+      Position = 42
       TicksMargin = 16
       LTicks = 8
       LTicksSize = 10
@@ -1745,13 +1748,14 @@ object MainForm: TMainForm
       ParentColor = False
       OnMouseEnter = kPrmValMouseEnter
       OnMouseLeave = kPrmValMouseLeave
+      OnMouseWheel = kPitchMouseWheel
     end
     object kMod: TuEKnob
       Left = 92
       Height = 64
       Top = 21
       Width = 64
-      Max = 255
+      Max = 200
       MaxAngle = 3300
       Min = 0
       MinAngle = 300
@@ -1926,6 +1930,7 @@ object MainForm: TMainForm
       ParentColor = False
       OnMouseEnter = kPrmValMouseEnter
       OnMouseLeave = kPrmValMouseLeave
+      OnMouseWheel = kPitchMouseWheel
     end
     object btChorus: TToggleBox
       Tag = 48
@@ -1960,7 +1965,7 @@ object MainForm: TMainForm
     GridLines = True
     OwnerData = True
     ReadOnly = True
-    TabOrder = 4
+    TabOrder = 5
     ViewStyle = vsReport
     OnData = lvGatesData
   end
@@ -1971,7 +1976,7 @@ object MainForm: TMainForm
     Width = 64
     Caption = 'Reset'
     OnClick = btInitClick
-    TabOrder = 5
+    TabOrder = 6
   end
   object btTick: TButton
     Left = 201
@@ -1980,7 +1985,7 @@ object MainForm: TMainForm
     Width = 64
     Caption = 'Next tick'
     OnClick = btTickClick
-    TabOrder = 7
+    TabOrder = 8
   end
   object btSave: TButton
     Left = 136
@@ -1989,7 +1994,16 @@ object MainForm: TMainForm
     Width = 64
     Caption = 'Save'
     OnClick = btSaveClick
-    TabOrder = 6
+    TabOrder = 7
+  end
+  object lbxOutputDevices: TCheckListBox
+    Left = 8
+    Height = 128
+    Top = 184
+    Width = 257
+    ItemHeight = 0
+    OnClickCheck = lbxInputDevicesClickCheck
+    TabOrder = 2
   end
   object tiTick: TTimer
     Enabled = False
