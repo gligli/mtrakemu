@@ -2002,7 +2002,7 @@ object MainForm: TMainForm
     Top = 184
     Width = 257
     ItemHeight = 0
-    OnClickCheck = lbxInputDevicesClickCheck
+    OnClickCheck = lbxOutputDevicesClickCheck
     TabOrder = 2
   end
   object tiTick: TTimer

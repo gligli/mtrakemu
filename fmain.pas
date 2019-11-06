@@ -128,6 +128,7 @@ type
     procedure kPrmValMouseEnter(Sender: TObject);
     procedure kPrmValMouseLeave(Sender: TObject);
     procedure lbxInputDevicesClickCheck(Sender: TObject);
+    procedure lbxOutputDevicesClickCheck(Sender: TObject);
     procedure lvCVData(Sender: TObject; Item: TListItem);
     procedure lvGatesData(Sender: TObject; Item: TListItem);
     procedure tbRunChange(Sender: TObject);
@@ -135,7 +136,8 @@ type
   private
     { private declarations }
     procedure UpdateState;
-    procedure DoMidiInData( const aDeviceIndex: integer; const aStatus, aData1, aData2: byte );
+    procedure DoMidiInData(const aDeviceIndex: integer; const aStatus, aData1, aData2: byte);
+    procedure DoSysExData(const aDeviceIndex: integer; const aStream: TMemoryStream);
     procedure OnMidi(var AMsg:TMessage);message WM_MIDI;
   public
     { public declarations }
@@ -162,6 +164,7 @@ begin
   lbxInputDevices.Items.Assign( MidiInput.Devices );
   lbxOutputDevices.Items.Assign( MidiOutput.Devices );
   MidiInput.OnMidiData := @DoMidiInData;
+  MidiInput.OnSysExData := @DoSysExData;
 
   btInit.Click;
 
@@ -206,6 +209,14 @@ begin
     MidiInput.Open( lbxInputDevices.ItemIndex )
   else
     MidiInput.Close( lbxInputDevices.ItemIndex )
+end;
+
+procedure TMainForm.lbxOutputDevicesClickCheck(Sender: TObject);
+begin
+  if lbxOutputDevices.Checked[ lbxOutputDevices.ItemIndex ] then
+    MidiOutput.Open( lbxOutputDevices.ItemIndex )
+  else
+    MidiOutput.Close( lbxOutputDevices.ItemIndex )
 end;
 
 procedure TMainForm.lvCVData(Sender: TObject; Item: TListItem);
@@ -254,10 +265,10 @@ begin
     lbxInputDevices.Checked[1] := True;
     MidiInput.Open(1);
   end;
-  if (lbxInputDevices.Count >= 3) and AnsiContainsText(lbxInputDevices.Items[1], 'Yoke') then
+  if (lbxOutputDevices.Count >= 2) and AnsiContainsText(lbxOutputDevices.Items[1], 'Yoke') then
   begin
-    lbxOutputDevices.Checked[2] := True;
-    MidiOutput.Open(2);
+    lbxOutputDevices.Checked[1] := True;
+    MidiOutput.Open(1);
   end;
 
   tiTick.Enabled:=tbRun.Checked;
@@ -265,9 +276,26 @@ end;
 
 procedure TMainForm.tiTickTimer(Sender: TObject);
 var i:Integer;
+    b: Byte;
+    ms: TMemoryStream;
 begin
   for i:=0 to tiTick.Interval div cTickMilliseconds * CTimesRealSpeed - 1 do
     P600Emu.Tick;
+
+  ms := TMemoryStream.Create;
+  try
+    while P600Emu.HW.RecvMIDIByte(b) do
+      for i := 0 to lbxOutputDevices.Count - 1 do
+        if lbxOutputDevices.Checked[i] then
+        begin
+          ms.WriteByte(b);
+          MidiOutput.SendSysEx(i, ms);
+          ms.Clear;
+        end;
+  finally
+    ms.Free;
+  end;
+
   UpdateState;
 end;
 
@@ -365,6 +393,12 @@ procedure TMainForm.DoMidiInData(const aDeviceIndex: integer; const aStatus,
 begin
   // MIDI classes don't seem to be thread safe, posting a message shoud be ok tho
   PostMessage(Handle,WM_MIDI,aDeviceIndex,aData1 or (aData2 shl 8) or (aStatus shl 16));
+end;
+
+procedure TMainForm.DoSysExData(const aDeviceIndex: integer; const aStream: TMemoryStream);
+begin
+  while aStream.Position < aStream.Size do
+    P600Emu.HW.SendMIDIByte(aStream.ReadByte);
 end;
 
 procedure TMainForm.OnMidi(var AMsg: TMessage);

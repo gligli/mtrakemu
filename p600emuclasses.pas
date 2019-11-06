@@ -81,7 +81,7 @@ type
     FCVValues:array[TP600CV] of Integer;
     FKeyStates:array[0..127] of Boolean;
 
-    FACIAQueue: TQueue;
+    FACIAXmitQueue, FACIARecvQueue: TQueue;
     FACIAControl: Byte;
     FACIAInt: Boolean;
     FACIAXmitData, FACIARecvData, FACIACtr: Integer;
@@ -113,6 +113,7 @@ type
 
     procedure RunCycles(ACount:Integer); // run ACount 4Mhz cycles
     procedure SendMIDIByte(AValue: Byte);
+    function RecvMIDIByte(out AValue: Byte): Boolean;
 
     property PotValues[APot:TP600Pot]:Word read GetPotValues write SetPotValues;
     property SevenSegment[AIndex:Integer]:Byte read GetSevenSegment;
@@ -333,12 +334,14 @@ end;
 
 constructor TProphet600Hardware.Create;
 begin
-  FACIAQueue := TQueue.Create;
+  FACIAXmitQueue := TQueue.Create;
+  FACIARecvQueue := TQueue.Create;
 end;
 
 destructor TProphet600Hardware.Destroy;
 begin
-  FACIAQueue.Free;
+  FACIARecvQueue.Free;
+  FACIAXmitQueue.Free;
 
   inherited Destroy;
 end;
@@ -366,8 +369,8 @@ begin
   F7MsPhase := 0;
   F7MsPre := 0;
 
-  while FACIAQueue.Count > 0 do
-    FACIAQueue.Pop;
+  while FACIARecvQueue.Count > 0 do
+    FACIARecvQueue.Pop;
   FACIACtr := 0;
   FACIAXmitData := -1;
   FACIARecvData := -1;
@@ -539,7 +542,7 @@ begin
         case AAddress and $03 of
           2:
           begin
-            Result := (Ord(FACIARecvData >= 0) shl 0) or (Ord(FACIAXmitData < 0) shl 1) or (Ord(FACIAInt) shl 7) or $0c;
+            Result := (Ord(FACIARecvData >= 0) shl 0) or (Ord(FACIAXmitData < 0) shl 1) or (Ord(FACIAInt) shl 7);
           end;
           3:
           begin
@@ -719,21 +722,41 @@ begin
   begin
     FACIACtr := 0;
 
-    // TODO: Send byte
-    FACIAXmitData := -1;
-
-    if FACIAQueue.Count > 0  then
+    if FACIAXmitData >= 0 then
     begin
-      FACIAInt := (FACIAControl and $80) <> 0;
-      FACIARecvData := IntPtr(FACIAQueue.Pop);
-      z80_cause_NMI;
+      FACIAXmitQueue.Push(Pointer(FACIAXmitData));
+      FACIAXmitData := -abs(FACIAXmitData);
+
+      FACIAInt := (FACIAControl and $60) = $20;
+      if FACIAInt then
+        z80_cause_NMI;
+    end;
+
+    if FACIARecvQueue.Count > 0  then
+    begin
+      FACIARecvData := IntPtr(FACIARecvQueue.Pop);
+
+      FACIAInt := (FACIAControl and $80) = $80;
+      if FACIAInt then
+        z80_cause_NMI;
     end;
   end;
 end;
 
 procedure TProphet600Hardware.SendMIDIByte(AValue: Byte);
 begin
-  FACIAQueue.Push(Pointer(AValue));
+  FACIARecvQueue.Push(Pointer(AValue));
+end;
+
+function TProphet600Hardware.RecvMIDIByte(out AValue: Byte): Boolean;
+begin
+  Result := False;
+  AValue := 0;
+  if FACIAXmitQueue.Count > 0 then
+  begin
+    Result := True;
+    AValue := Byte(FACIAXmitQueue.Pop);
+  end;
 end;
 
 end.
