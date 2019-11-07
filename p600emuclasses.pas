@@ -83,7 +83,7 @@ type
 
     FACIAXmitQueue, FACIARecvQueue: TQueue;
     FACIAControl: Byte;
-    FACIAInt: Boolean;
+    FACIAInt, FACIAIntInh: Boolean;
     FACIAXmitData, FACIARecvData, FACIACtr: Integer;
 
     function ADCCompare:Boolean;
@@ -371,9 +371,12 @@ begin
 
   while FACIARecvQueue.Count > 0 do
     FACIARecvQueue.Pop;
+  FACIAControl := 0;
   FACIACtr := 0;
   FACIAXmitData := -1;
   FACIARecvData := -1;
+  FACIAInt := False;
+  FACIAIntInh := True;
 end;
 
 procedure TProphet600Hardware.LoadRomFromFile(AFileName: String);
@@ -428,6 +431,7 @@ begin
         FRam[AAddress and $3fff] := AValue;
       $c000..$dfff:
       begin
+        WriteLn(hexStr(AAddress, 4), #9, hexStr(AValue, 2));
         case AAddress and $03 of
           0:
           begin
@@ -507,6 +511,7 @@ begin
         $c:
         begin
           FTuneCntInh := (AValue and 8) = 0;
+          FACIAIntInh := (AValue and $10) <> 0;
         end;
         $e:
         begin
@@ -539,6 +544,7 @@ begin
         Result := FRam[AAddress and $3fff];
       $c000..$dfff:
       begin
+        WriteLn(hexStr(AAddress, 4));
         case AAddress and $03 of
           2:
           begin
@@ -547,7 +553,7 @@ begin
           3:
           begin
             Result := abs(FACIARecvData);
-            FACIARecvData := -abs(FACIARecvData);
+            FACIARecvData := -abs(FACIARecvData) - 65536;
             FACIAInt := False;
           end;
         end;
@@ -611,6 +617,7 @@ var
   i, cycles:Integer;
   ratio:Double;
   l: TP600LED;
+  PrevACIAInt: Boolean;
 begin
   FCurTick += ACount;
 
@@ -722,24 +729,23 @@ begin
   begin
     FACIACtr := 0;
 
+    PrevACIAInt := FACIAInt;
+
     if FACIAXmitData >= 0 then
     begin
       FACIAXmitQueue.Push(Pointer(FACIAXmitData));
-      FACIAXmitData := -abs(FACIAXmitData);
-
-      FACIAInt := (FACIAControl and $60) = $20;
-      if FACIAInt then
-        z80_cause_NMI;
+      FACIAXmitData := -abs(FACIAXmitData) - 65536;
+      FACIAInt := FACIAInt or ((FACIAControl and $60) = $20);
     end;
 
     if FACIARecvQueue.Count > 0  then
     begin
       FACIARecvData := IntPtr(FACIARecvQueue.Pop);
-
-      FACIAInt := (FACIAControl and $80) = $80;
-      if FACIAInt then
-        z80_cause_NMI;
+      FACIAInt := FACIAInt or ((FACIAControl and $80) = $80);
     end;
+
+    if (not PrevACIAInt and FACIAInt) and not FACIAIntInh then
+      z80_cause_NMI;
   end;
 end;
 

@@ -285,6 +285,8 @@ begin
   ms := TMemoryStream.Create;
   try
     while P600Emu.HW.RecvMIDIByte(b) do
+    begin
+      DebugLn(Format('MIDI %.2x', [b]));
       for i := 0 to lbxOutputDevices.Count - 1 do
         if lbxOutputDevices.Checked[i] then
         begin
@@ -292,6 +294,7 @@ begin
           MidiOutput.SendSysEx(i, ms);
           ms.Clear;
         end;
+    end;
   finally
     ms.Free;
   end;
