@@ -134,6 +134,10 @@ type
     procedure tbRunChange(Sender: TObject);
     procedure tiTickTimer(Sender: TObject);
   private
+    FMIDIXmitStream: TMemoryStream;
+    FMIDIXmitRunningStatus: Byte;
+    FMIDIXmitCount: Integer;
+
     { private declarations }
     procedure UpdateState;
     procedure DoMidiInData(const aDeviceIndex: integer; const aStatus, aData1, aData2: byte);
@@ -148,7 +152,9 @@ var
 
 implementation
 
-const CTimesRealSpeed=1;
+const
+  CTimesRealSpeed=1;
+  CStatusToByteCount : array[0..$f] of Integer = (-1, -1, -1, -1, -1, -1, -1, -1, 3, 3, 3, 3, 2, 2, 3, 1);
 
 {$R *.lfm}
 
@@ -157,6 +163,7 @@ const CTimesRealSpeed=1;
 procedure TMainForm.FormCreate(Sender: TObject);
 begin
   P600Emu := TProphet600Emulator.Create;
+  FMIDIXmitStream := TMemoryStream.Create;
 
   Constraints.MinHeight:=Height;
   Constraints.MinWidth:=Width;
@@ -175,6 +182,7 @@ end;
 procedure TMainForm.FormDestroy(Sender: TObject);
 begin
   P600Emu.Free;
+  FMIDIXmitStream.Free;
 
   MidiInput.CloseAll;
 end;
@@ -276,27 +284,69 @@ end;
 
 procedure TMainForm.tiTickTimer(Sender: TObject);
 var i:Integer;
-    b: Byte;
-    ms: TMemoryStream;
+    sts, b, t0, t1, t2 : Byte;
 begin
   for i:=0 to tiTick.Interval div cTickMilliseconds * CTimesRealSpeed - 1 do
     P600Emu.Tick;
 
-  ms := TMemoryStream.Create;
-  try
-    while P600Emu.HW.RecvMIDIByte(b) do
+  while P600Emu.HW.RecvMIDIByte(b) do
+  begin
+    if FMIDIXmitStream.Size = 0 then
     begin
-      DebugLn(Format('MIDI %.2x', [b]));
-      for i := 0 to lbxOutputDevices.Count - 1 do
-        if lbxOutputDevices.Checked[i] then
-        begin
-          ms.WriteByte(b);
-          MidiOutput.SendSysEx(i, ms);
-          ms.Clear;
-        end;
+      if (b and $80) <> 0 then // status?
+      begin
+        sts := b;
+        if (sts and $f0) <> $f0 then // not realtime?
+          FMIDIXmitRunningStatus := sts;
+      end
+      else
+      begin
+        sts := FMIDIXmitRunningStatus;
+        FMIDIXmitStream.WriteByte(sts);
+      end;
+
+      FMIDIXmitCount := CStatusToByteCount[sts shr 4];
+
+      if sts = $f0 then // sysex start?
+        FMIDIXmitCount := MaxInt;
     end;
-  finally
-    ms.Free;
+
+    FMIDIXmitStream.WriteByte(b);
+
+    if (FMIDIXmitStream.Size >= FMIDIXmitCount) or (b = $f7) then
+    begin
+      FMIDIXmitStream.Position := 0;
+
+      if b = $f7 then
+      begin
+        for i := 0 to lbxOutputDevices.Count - 1 do
+          if lbxOutputDevices.Checked[i] then
+            MidiOutput.SendSysEx(i, FMIDIXmitStream)
+      end
+      else
+      begin
+        t0 := 0;
+        if FMIDIXmitStream.Size >= 1 then
+          t0 := FMIDIXmitStream.ReadByte;
+
+        t1 := 0;
+        if FMIDIXmitStream.Size >= 2 then
+          t1 := FMIDIXmitStream.ReadByte;
+
+        t2 := 0;
+        if FMIDIXmitStream.Size >= 3 then
+          t2 := FMIDIXmitStream.ReadByte;
+
+        for i := 0 to lbxOutputDevices.Count - 1 do
+          if lbxOutputDevices.Checked[i] then
+          begin
+            MidiOutput.Send(i, t0, t1, t2);
+            DebugLn(Format( '%s: <Status> %.2x, <Data 1> %.2x <Data 2> %.2x', [ MidiOutput.Devices[i], t0, t1, t2 ] ));
+          end;
+      end;
+
+      FMIDIXmitStream.Clear;
+    end;
   end;
 
   UpdateState;
@@ -405,8 +455,6 @@ begin
 end;
 
 procedure TMainForm.OnMidi(var AMsg: TMessage);
-const
-  CStatusToByteCount : array[0..$f] of Integer = (-1, -1, -1, -1, -1, -1, -1, -1, 3, 3, 3, 3, 2, 2, 3, 1);
 var
   devIndex:Integer;
   status,data1,data2:Byte;
