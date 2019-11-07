@@ -74,6 +74,7 @@ type
 
     FIncompleteCycles:Double;
 
+    FZ80Context:array[z80_register] of Word;
     FRom:array[0..16*1024-1] of Byte;
     FRam:array[0..10*1024-1] of Byte;
     FPotValues:array[TP600Pot] of Word;
@@ -89,6 +90,7 @@ type
     function ADCCompare:Boolean;
     function GetRam(AAddress: Word): Byte;
     procedure UpdateCVs;
+    procedure UpdateZ80Context;
 
     // getters/setters
     function GetCVValues(ACV: TP600CV): Integer;
@@ -278,6 +280,14 @@ begin
       FCVValues[TP600CV(reg + (i shl 3))] := dv;
 end;
 
+procedure TProphet600Hardware.UpdateZ80Context;
+var
+  zr: z80_register;
+begin
+  for zr := Low(zr) to High(zr) do
+    FZ80Context[zr] := z80_get_reg(zr);
+end;
+
 function TProphet600Hardware.GetCVHertz(ACV: TP600CV): Double;
 begin
   if TP600CV(Ord(ACV) and $07) = pcFil6 then
@@ -431,6 +441,8 @@ var
   i, j: Integer;
   lv,lh: Byte;
 begin
+  UpdateZ80Context;
+
   if not AIsIO then
   begin
     case AAddress of
@@ -541,6 +553,8 @@ end;
 function TProphet600Hardware.Read(AIsIO: Boolean; AAddress: Word): Byte;
 var i,bIdx:Integer;
 begin
+  UpdateZ80Context;
+
   Result:=$ff;
 
   if not AIsIO then
@@ -625,6 +639,8 @@ var
   ratio:Double;
   l: TP600LED;
 begin
+  UpdateZ80Context;
+
   FCurTick += ACount;
 
   // display remanance handling
