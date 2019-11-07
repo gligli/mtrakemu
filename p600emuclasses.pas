@@ -87,6 +87,7 @@ type
     FACIAXmitData, FACIARecvData, FACIACtr: Integer;
 
     function ADCCompare:Boolean;
+    function GetRam(AAddress: Word): Byte;
     procedure UpdateCVs;
 
     // getters/setters
@@ -125,6 +126,8 @@ type
     property CVVolts[ACV:TP600CV]:Double read GetCVVolts;
     property CVHertz[ACV:TP600CV]:Double read GetCVHertz;
     property GateValues[AGate:TP600Gate]:Boolean read GetGateValues;
+
+    property Ram[AAddress: Word]: Byte read GetRam;
   end;
 
 
@@ -250,6 +253,11 @@ end;
 function TProphet600Hardware.ADCCompare: Boolean;
 begin
   Result:=Integer(FPotValues[CABCToPot[FSHAD shr 5]] shr 4) > FDACValue;
+end;
+
+function TProphet600Hardware.GetRam(AAddress: Word): Byte;
+begin
+  Result := FRam[AAddress];
 end;
 
 procedure TProphet600Hardware.UpdateCVs;

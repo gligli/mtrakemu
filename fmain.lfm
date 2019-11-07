@@ -2,10 +2,10 @@ object MainForm: TMainForm
   Left = -2
   Height = 522
   Top = 70
-  Width = 1088
+  Width = 1296
   Caption = 'MultiTrak emulator'
   ClientHeight = 522
-  ClientWidth = 1088
+  ClientWidth = 1296
   DoubleBuffered = True
   Font.CharSet = ANSI_CHARSET
   Font.Height = -11
@@ -21,12 +21,12 @@ object MainForm: TMainForm
     Left = 280
     Height = 329
     Top = 8
-    Width = 384
+    Width = 336
     Anchors = [akTop, akLeft, akBottom]
     Columns = <    
       item
         Caption = 'CV'
-        Width = 100
+        Width = 85
       end    
       item
         Alignment = taRightJustify
@@ -84,11 +84,11 @@ object MainForm: TMainForm
     Left = 0
     Height = 177
     Top = 345
-    Width = 1088
+    Width = 1296
     Align = alBottom
     BevelOuter = bvNone
     ClientHeight = 177
-    ClientWidth = 1088
+    ClientWidth = 1296
     Color = clBlack
     ParentColor = False
     TabOrder = 4
@@ -1946,10 +1946,10 @@ object MainForm: TMainForm
     end
   end
   object lvGates: TListView
-    Left = 680
+    Left = 632
     Height = 328
     Top = 8
-    Width = 400
+    Width = 184
     Anchors = [akTop, akLeft, akBottom]
     Columns = <    
       item
@@ -2004,6 +2004,54 @@ object MainForm: TMainForm
     ItemHeight = 0
     OnClickCheck = lbxOutputDevicesClickCheck
     TabOrder = 2
+  end
+  object sgrMem: TStringGrid
+    Left = 832
+    Height = 304
+    Top = 32
+    Width = 456
+    AlternateColor = 15261920
+    Anchors = [akTop, akLeft, akRight, akBottom]
+    ColCount = 17
+    DefaultColWidth = 24
+    FixedRows = 0
+    MouseWheelOption = mwGrid
+    Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goThumbTracking, goSmoothScroll]
+    RowCount = 640
+    TabOrder = 9
+    TitleFont.CharSet = ANSI_CHARSET
+    TitleFont.Height = -11
+    TitleFont.Name = 'Tahoma'
+    TitleFont.Pitch = fpVariable
+    TitleFont.Quality = fqDraft
+    TitleStyle = tsNative
+    ColWidths = (
+      50
+      24
+      24
+      24
+      24
+      24
+      24
+      24
+      24
+      24
+      24
+      24
+      24
+      24
+      24
+      24
+      24
+    )
+  end
+  object chkMem: TCheckBox
+    Left = 832
+    Height = 19
+    Top = 8
+    Width = 96
+    Caption = 'Update memory'
+    TabOrder = 10
   end
   object tiTick: TTimer
     Enabled = False

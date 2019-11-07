@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, StdCtrls,
-  ExtCtrls, ComCtrls, ValEdit, CheckLst, p600emuclasses, ueled, uEKnob,
+  ExtCtrls, ComCtrls, ValEdit, CheckLst, Grids, p600emuclasses, ueled, uEKnob,
   LazLogger, windows, strutils, typinfo, Midi, c7Seg, syncobjs, Types;
 
 const
@@ -53,6 +53,7 @@ type
     btPrmEd: TToggleBox;
     btSeq: TToggleBox;
     btToTape: TToggleBox;
+    chkMem: TCheckBox;
     kMasterTune: TuEKnob;
     kPrmVal: TuEKnob;
     kMod: TuEKnob;
@@ -113,6 +114,7 @@ type
     sF1: TShape;
     sG: TShape;
     sG1: TShape;
+    sgrMem: TStringGrid;
     ssLeft: TSevenSegFrame;
     ssRight: TSevenSegFrame;
     tiTick: TTimer;
@@ -376,10 +378,9 @@ procedure TMainForm.UpdateState;
     Result := round(APot * 5.0 / 4.0 * 256.0);
   end;
 
-var cv:TP600CV;
-    gt:TP600Gate;
-    c: TToggleBox;
-    i: Integer;
+var
+  c: TToggleBox;
+  i, j: Integer;
 begin
   with P600Emu.HW do
   begin
@@ -438,6 +439,14 @@ begin
         Continue;
       P600Emu.HW.ButtonStates[TP600Button(c.Tag)] := c.Checked;
     end;
+
+    if chkMem.Checked then
+      for j := 0 to sgrMem.RowCount - 1 do
+      begin
+        sgrMem.Cells[0, j] := hexStr(j * 16, 4);
+        for i := 1 to sgrMem.ColCount - 1 do
+          sgrMem.Cells[i, j] := hexStr(Ram[j * 16 + i - 1], 2);
+      end;
   end;
 end;
 
@@ -457,24 +466,24 @@ end;
 procedure TMainForm.OnMidi(var AMsg: TMessage);
 var
   devIndex:Integer;
-  status,data1,data2:Byte;
+  r0,r1,r2:Byte;
 begin
   devIndex:=AMsg.wParam;
-  status:=AMsg.lParam shr 16;
-  data2:=AMsg.lParam shr 8;
-  data1:=AMsg.lParam;
+  r0:=AMsg.lParam shr 16;
+  r2:=AMsg.lParam shr 8;
+  r1:=AMsg.lParam;
 
   // print the message log
-  DebugLn(Format( '%s: <Status> %.2x, <Data 1> %.2x <Data 2> %.2x', [ MidiInput.Devices[devIndex], status, data1, data2 ] ));
+  DebugLn(Format( '%s: <Status> %.2x, <Data 1> %.2x <Data 2> %.2x', [ MidiInput.Devices[devIndex], r0, r1, r2 ] ));
 
-  if CStatusToByteCount[status shr 4] >= 1 then
-    P600Emu.HW.SendMIDIByte(status);
+  if CStatusToByteCount[r0 shr 4] >= 1 then
+    P600Emu.HW.SendMIDIByte(r0);
 
-  if CStatusToByteCount[status shr 4] >= 2 then
-    P600Emu.HW.SendMIDIByte(data1);
+  if CStatusToByteCount[r0 shr 4] >= 2 then
+    P600Emu.HW.SendMIDIByte(r1);
 
-  if CStatusToByteCount[status shr 4] >= 3 then
-    P600Emu.HW.SendMIDIByte(data2);
+  if CStatusToByteCount[r0 shr 4] >= 3 then
+    P600Emu.HW.SendMIDIByte(r2);
 
   AMsg.Result:=0;
 end;
