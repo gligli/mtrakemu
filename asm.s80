@@ -12,11 +12,11 @@
 
 .bank 0 slot 0
 .org $0000
-	.dsb $35c4, $ff
-.org $35c4	
+	.dsb $35c4,$ff
+.org $35c4
 	push af
 	push de
-	ld hl, $407c
+	ld hl,$407c
 	ld e,(hl)
 	ld a,($40c3)
 	ld d,a
