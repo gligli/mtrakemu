@@ -158,6 +158,11 @@ var
 
 implementation
 
+procedure P600Emu_FetchCallback(AAddress:Word);cdecl;
+begin
+  P600Emu.HW.Read(False,AAddress);
+end;
+
 procedure P600Emu_WriteMem(AAddress:Word;AValue:Byte);cdecl;
 begin
   P600Emu.HW.Write(False,AAddress,AValue);
@@ -221,6 +226,7 @@ begin
 
   z80_set_in(@P600Emu_ReadIO);
   z80_set_out(@P600Emu_WriteIO);
+  z80_set_fetch_callback(@P600Emu_FetchCallback);
 
   z80_reset;
 end;
@@ -447,9 +453,13 @@ begin
   begin
     case AAddress of
       $0000..$3fff:
+      begin
         Assert(False);
+      end;
       $4000..$67ff:
+      begin
         FRam[AAddress and $3fff] := AValue;
+      end;
       $c000..$dfff:
       begin
         case AAddress and $03 of
@@ -561,9 +571,13 @@ begin
   begin
     case AAddress of
       $0000..$3fff:
+      begin
         Result := FRom[AAddress];
+      end;
       $4000..$67ff:
+      begin
         Result := FRam[AAddress and $3fff];
+      end;
       $c000..$dfff:
       begin
         case AAddress and $03 of

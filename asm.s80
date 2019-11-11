@@ -1,0 +1,35 @@
+.memorymap
+	defaultslot 0
+	slotsize $3600
+	slot 0 $35c4
+.endme
+
+.rombankmap
+	bankstotal 1
+	banksize $3600
+	banks 1
+.endro
+
+.bank 0 slot 0
+.org $0000
+	.dsb $35c4, $ff
+.org $35c4	
+	push af
+	push de
+	ld hl, $407c
+	ld e,(hl)
+	ld a,($40c3)
+	ld d,a
+	xor e
+	jr z,+
+	inc l
+	ld a,(hl)
+	xor d
+	ld (hl),a
+	dec l
++:
+	ld (hl),d
+	ld l,$92
+	pop de
+	pop af
+	ret
