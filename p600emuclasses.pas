@@ -75,6 +75,7 @@ type
     FIncompleteCycles:Double;
 
     FZ80Context:array[z80_register] of Word;
+    FRomAccesses:array[0..16*1024-1] of Integer;
     FRom:array[0..16*1024-1] of Byte;
     FRam:array[0..10*1024-1] of Byte;
     FPotValues:array[TP600Pot] of Word;
@@ -89,6 +90,7 @@ type
 
     function ADCCompare:Boolean;
     function GetRam(AAddress: Word): Byte;
+    function GetRomAccesses(AAddress: Word): Integer;
     procedure UpdateCVs;
     procedure UpdateZ80Context;
 
@@ -130,6 +132,7 @@ type
     property GateValues[AGate:TP600Gate]:Boolean read GetGateValues;
 
     property Ram[AAddress: Word]: Byte read GetRam;
+    property RomAccesses[AAddress: Word]: Integer read GetRomAccesses;
   end;
 
 
@@ -268,6 +271,11 @@ begin
   Result := FRam[AAddress];
 end;
 
+function TProphet600Hardware.GetRomAccesses(AAddress: Word): Integer;
+begin
+  Result := FRomAccesses[AAddress];
+end;
+
 procedure TProphet600Hardware.UpdateCVs;
 var reg:Byte;
     dv: Integer;
@@ -374,6 +382,7 @@ procedure TProphet600Hardware.Initialize;
 begin
   FCurTick := 0;
 
+  FillDWord(FRomAccesses[0], Length(FRomAccesses), 0);
   FillChar(FRam[0], SizeOf(FRam), $ff);
   FillChar(FDisplay[plA1], SizeOf(FDisplay), 0);
   FillChar(FCVValues[pcOsc6], SizeOf(FCVValues), 0);
@@ -572,6 +581,7 @@ begin
     case AAddress of
       $0000..$3fff:
       begin
+        Inc(FRomAccesses[AAddress]);
         Result := FRom[AAddress];
       end;
       $4000..$67ff:

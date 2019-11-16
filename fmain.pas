@@ -29,6 +29,7 @@ type
     btInit: TButton;
     btMetro: TToggleBox;
     btChorus: TToggleBox;
+    btnAccesses: TButton;
     btStart: TToggleBox;
     btTick: TButton;
     btSave: TButton;
@@ -120,6 +121,7 @@ type
     tiTick: TTimer;
     tbRun: TToggleBox;
     procedure btInitClick(Sender: TObject);
+    procedure btnAccessesClick(Sender: TObject);
     procedure btSaveClick(Sender: TObject);
     procedure btTickClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -364,6 +366,29 @@ procedure TMainForm.btInitClick(Sender: TObject);
 begin
   DebugLn(Caption);
   P600Emu.Initialize;
+end;
+
+procedure TMainForm.btnAccessesClick(Sender: TObject);
+var
+  i, start: Integer;
+begin
+  start := -1;
+  for i := 1 to 16*1024 - 1 do
+  begin
+    if (P600Emu.HW.RomAccesses[i] = 0) and (P600Emu.HW.RomAccesses[i - 1] <> 0) then
+    begin
+      start := i;
+    end;
+
+    if (P600Emu.HW.RomAccesses[i] <> 0) and (P600Emu.HW.RomAccesses[i - 1] = 0) and (start >= 0) then
+    begin
+      WriteLn(hexStr(start, 4), ' - ', hexStr(i, 4), #9, i - start);
+      start := -1;
+    end;
+  end;
+
+  if start >= 0 then
+    WriteLn(hexStr(start, 4), ' - 3FFF');
 end;
 
 procedure TMainForm.btSaveClick(Sender: TObject);

@@ -12,13 +12,41 @@
 
 .bank 0 slot 0
 .org $0000
-	.dsb $35c4,$ff
+	.dsb $3600,$ff
+
+.org $0234
+pbend:
+	ld d,a
+	ld a,($4079)
+	rra
+	ret c
+	ld a,($407d)
+	xor d
+	ret p
+
+	or d
+	rrca
+-:	
+
+	ld bc,($409c)
+	add hl,bc
+	ld bc,($40f8)
+	add hl,bc
+	
+	rlca
+	jr nc,-
+	
+	ret
+	
 .org $35c4
 	push af
 	push de
 	ld hl,$407c
 	ld e,(hl)
 	ld a,($40c3)
+	rlca
+	rlca
+	rlca
 	ld d,a
 	xor e
 	jr z,+

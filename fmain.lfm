@@ -1,11 +1,11 @@
 object MainForm: TMainForm
-  Left = -2
+  Left = 7
   Height = 522
-  Top = 70
-  Width = 1296
+  Top = 87
+  Width = 1264
   Caption = 'MultiTrak emulator'
   ClientHeight = 522
-  ClientWidth = 1296
+  ClientWidth = 1264
   DoubleBuffered = True
   Font.CharSet = ANSI_CHARSET
   Font.Height = -11
@@ -84,11 +84,11 @@ object MainForm: TMainForm
     Left = 0
     Height = 177
     Top = 345
-    Width = 1296
+    Width = 1264
     Align = alBottom
     BevelOuter = bvNone
     ClientHeight = 177
-    ClientWidth = 1296
+    ClientWidth = 1264
     Color = clBlack
     ParentColor = False
     TabOrder = 4
@@ -2009,7 +2009,7 @@ object MainForm: TMainForm
     Left = 832
     Height = 304
     Top = 32
-    Width = 456
+    Width = 424
     AlternateColor = 15261920
     Anchors = [akTop, akLeft, akRight, akBottom]
     ColCount = 17
@@ -2052,6 +2052,16 @@ object MainForm: TMainForm
     Width = 96
     Caption = 'Update memory'
     TabOrder = 10
+  end
+  object btnAccesses: TButton
+    Left = 1181
+    Height = 25
+    Top = 2
+    Width = 75
+    Anchors = [akTop, akRight]
+    Caption = 'Accesses'
+    OnClick = btnAccessesClick
+    TabOrder = 11
   end
   object tiTick: TTimer
     Enabled = False
