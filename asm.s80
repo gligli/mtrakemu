@@ -15,7 +15,6 @@
 	.dsb $3600,$ff
 
 .org $0234
-pbend:
 	ld d,a
 	ld a,($4079)
 	rra
@@ -23,19 +22,15 @@ pbend:
 	ld a,($407d)
 	xor d
 	ret p
-
 	or d
 	rrca
--:	
-
+-:
 	ld bc,($409c)
 	add hl,bc
 	ld bc,($40f8)
 	add hl,bc
-	
 	rlca
 	jr nc,-
-	
 	ret
 	
 .org $35c4
