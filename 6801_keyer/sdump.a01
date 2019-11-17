@@ -10,34 +10,68 @@
 	banks 1
 .endro
 
+.macro char
+	staa	$13
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+.endm
+
 .bank 0 slot 0
-init:	
-	ldaa	#$0a
+	ldaa	#$04
 	staa	$10
 	ldaa	#$02
 	staa	$11
 
-	ldab	#$04
-repeat:
-
+	ldaa	#'P'
+	char
+	ldaa	#'o'
+	char
+	ldaa	#'u'
+	char
+	ldaa	#'e'
+	char
+	ldaa	#'t'
+	char
+	ldaa	#'!'
+	char
+	
 	ldx	#$f800
 loop:
 	ldaa	0,x
-	staa	$13
-
-wait:
-	ldaa    $11
-	bita	#$20
-	beq	wait
-	
+	char
 	inx
 	bne	loop
 
-	decb
-	bne	repeat
-
 end:
 	bra	end
+	
+dummy:
+	rti
 
-	.org	$3ffe
+	.org	$3ff0
+	.dw	dummy
+	.dw	dummy
+	.dw	dummy
+	.dw	dummy
+	.dw	dummy
+	.dw	dummy
+	.dw	dummy
 	.dw	init
