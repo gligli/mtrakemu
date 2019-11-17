@@ -14,13 +14,13 @@
 init:	
 	ldaa	#$0a
 	staa	$10
-	ldaa	#$0a
-	staa	$0f
-	ldab	#$02
-	
-repeat:
-	ldx	#$f800
+	ldaa	#$02
+	staa	$11
 
+	ldab	#$04
+repeat:
+
+	ldx	#$f800
 loop:
 	ldaa	0,x
 	staa	$13
@@ -35,6 +35,9 @@ wait:
 
 	decb
 	bne	repeat
+
+end:
+	bra	end
 
 	.org	$3ffe
 	.dw	init
