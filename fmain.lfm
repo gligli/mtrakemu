@@ -1,11 +1,11 @@
 object MainForm: TMainForm
   Left = 7
-  Height = 522
+  Height = 542
   Top = 87
-  Width = 1264
+  Width = 1300
   Caption = 'MultiTrak emulator'
-  ClientHeight = 522
-  ClientWidth = 1264
+  ClientHeight = 542
+  ClientWidth = 1300
   DoubleBuffered = True
   Font.CharSet = ANSI_CHARSET
   Font.Height = -11
@@ -19,7 +19,7 @@ object MainForm: TMainForm
   LCLVersion = '2.0.6.0'
   object lvCV: TListView
     Left = 280
-    Height = 329
+    Height = 349
     Top = 8
     Width = 336
     Anchors = [akTop, akLeft, akBottom]
@@ -63,7 +63,7 @@ object MainForm: TMainForm
   object llCurCtrl: TLabel
     Left = 8
     Height = 20
-    Top = 320
+    Top = 340
     Width = 240
     Anchors = [akLeft, akBottom]
     AutoSize = False
@@ -83,12 +83,12 @@ object MainForm: TMainForm
   object pnP600: TPanel
     Left = 0
     Height = 177
-    Top = 345
-    Width = 1264
+    Top = 365
+    Width = 1300
     Align = alBottom
     BevelOuter = bvNone
     ClientHeight = 177
-    ClientWidth = 1264
+    ClientWidth = 1300
     Color = clBlack
     ParentColor = False
     TabOrder = 4
@@ -1947,7 +1947,7 @@ object MainForm: TMainForm
   end
   object lvGates: TListView
     Left = 632
-    Height = 328
+    Height = 348
     Top = 8
     Width = 184
     Anchors = [akTop, akLeft, akBottom]
@@ -2007,9 +2007,9 @@ object MainForm: TMainForm
   end
   object sgrMem: TStringGrid
     Left = 832
-    Height = 304
+    Height = 324
     Top = 32
-    Width = 424
+    Width = 460
     AlternateColor = 15261920
     Anchors = [akTop, akLeft, akRight, akBottom]
     ColCount = 17
@@ -2024,7 +2024,9 @@ object MainForm: TMainForm
     TitleFont.Name = 'Tahoma'
     TitleFont.Pitch = fpVariable
     TitleFont.Quality = fqDraft
-    TitleStyle = tsNative
+    TitleStyle = tsStandard
+    OnKeyPress = sgrMemKeyPress
+    OnSelectCell = sgrMemSelectCell
     ColWidths = (
       50
       24
@@ -2054,7 +2056,7 @@ object MainForm: TMainForm
     TabOrder = 10
   end
   object btnAccesses: TButton
-    Left = 1181
+    Left = 1217
     Height = 25
     Top = 2
     Width = 75
@@ -2062,6 +2064,34 @@ object MainForm: TMainForm
     Caption = 'Accesses'
     OnClick = btnAccessesClick
     TabOrder = 11
+  end
+  object edAddr: TEdit
+    Left = 1060
+    Height = 21
+    Top = 6
+    Width = 80
+    Anchors = [akTop, akRight]
+    TabOrder = 12
+    Text = '0'
+  end
+  object edValue: TEdit
+    Left = 1140
+    Height = 21
+    Top = 6
+    Width = 32
+    Anchors = [akTop, akRight]
+    TabOrder = 13
+    Text = '0'
+  end
+  object btnPoke: TButton
+    Left = 1172
+    Height = 25
+    Top = 2
+    Width = 43
+    Anchors = [akTop, akRight]
+    Caption = 'Poke'
+    OnClick = btnPokeClick
+    TabOrder = 14
   end
   object tiTick: TTimer
     Enabled = False

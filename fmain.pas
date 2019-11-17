@@ -30,6 +30,7 @@ type
     btMetro: TToggleBox;
     btChorus: TToggleBox;
     btnAccesses: TButton;
+    btnPoke: TButton;
     btStart: TToggleBox;
     btTick: TButton;
     btSave: TButton;
@@ -55,6 +56,8 @@ type
     btSeq: TToggleBox;
     btToTape: TToggleBox;
     chkMem: TCheckBox;
+    edAddr: TEdit;
+    edValue: TEdit;
     kMasterTune: TuEKnob;
     kPrmVal: TuEKnob;
     kMod: TuEKnob;
@@ -122,6 +125,7 @@ type
     tbRun: TToggleBox;
     procedure btInitClick(Sender: TObject);
     procedure btnAccessesClick(Sender: TObject);
+    procedure btnPokeClick(Sender: TObject);
     procedure btSaveClick(Sender: TObject);
     procedure btTickClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -135,6 +139,8 @@ type
     procedure lbxOutputDevicesClickCheck(Sender: TObject);
     procedure lvCVData(Sender: TObject; Item: TListItem);
     procedure lvGatesData(Sender: TObject; Item: TListItem);
+    procedure sgrMemKeyPress(Sender: TObject; var Key: char);
+    procedure sgrMemSelectCell(Sender: TObject; aCol, aRow: Integer; var CanSelect: Boolean);
     procedure tbRunChange(Sender: TObject);
     procedure tiTickTimer(Sender: TObject);
   private
@@ -269,6 +275,17 @@ begin
   end;
 end;
 
+procedure TMainForm.sgrMemKeyPress(Sender: TObject; var Key: char);
+begin
+  if Key = #13 then
+    btnPoke.Click;
+end;
+
+procedure TMainForm.sgrMemSelectCell(Sender: TObject; aCol, aRow: Integer; var CanSelect: Boolean);
+begin
+  edAddr.Text := IntToHex(aRow * 16 + (aCol - 1), 4);
+end;
+
 procedure TMainForm.tbRunChange(Sender: TObject);
 begin
   //HACK: open MIDI Yoke 2 on my PC...
@@ -389,6 +406,11 @@ begin
 
   if start >= 0 then
     WriteLn(hexStr(start, 4), ' - 3FFF');
+end;
+
+procedure TMainForm.btnPokeClick(Sender: TObject);
+begin
+  P600Emu.HW.Ram[Hex2Dec(edAddr.Text)] := Hex2Dec(edValue.Text);
 end;
 
 procedure TMainForm.btSaveClick(Sender: TObject);

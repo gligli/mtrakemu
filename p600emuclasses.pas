@@ -91,6 +91,7 @@ type
     function ADCCompare:Boolean;
     function GetRam(AAddress: Word): Byte;
     function GetRomAccesses(AAddress: Word): Integer;
+    procedure SetRam(AAddress: Word; AValue: Byte);
     procedure UpdateCVs;
     procedure UpdateZ80Context;
 
@@ -131,7 +132,7 @@ type
     property CVHertz[ACV:TP600CV]:Double read GetCVHertz;
     property GateValues[AGate:TP600Gate]:Boolean read GetGateValues;
 
-    property Ram[AAddress: Word]: Byte read GetRam;
+    property Ram[AAddress: Word]: Byte read GetRam write SetRam;
     property RomAccesses[AAddress: Word]: Integer read GetRomAccesses;
   end;
 
@@ -274,6 +275,11 @@ end;
 function TProphet600Hardware.GetRomAccesses(AAddress: Word): Integer;
 begin
   Result := FRomAccesses[AAddress];
+end;
+
+procedure TProphet600Hardware.SetRam(AAddress: Word; AValue: Byte);
+begin
+  FRam[AAddress] := AValue;
 end;
 
 procedure TProphet600Hardware.UpdateCVs;
