@@ -1,0 +1,40 @@
+.memorymap
+	defaultslot 0
+	slotsize $4000
+	slot 0 $8000
+.endme
+
+.rombankmap
+	bankstotal 1
+	banksize $4000
+	banks 1
+.endro
+
+.bank 0 slot 0
+init:	
+	ldaa	#$0a
+	staa	$10
+	ldaa	#$0a
+	staa	$0f
+	ldab	#$02
+	
+repeat:
+	ldx	#$f800
+
+loop:
+	ldaa	0,x
+	staa	$13
+
+wait:
+	ldaa    $11
+	bita	#$20
+	beq	wait
+	
+	inx
+	bne	loop
+
+	decb
+	bne	repeat
+
+	.org	$3ffe
+	.dw	init
