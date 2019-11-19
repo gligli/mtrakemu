@@ -29,7 +29,7 @@
 	add hl,bc
 	ld bc,($40f8)
 	add hl,bc
-	rlca
+	rrca
 	jr nc,-
 	ret
 	

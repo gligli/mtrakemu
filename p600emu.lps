@@ -21,10 +21,9 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="FMain"/>
-        <IsVisibleTab Value="True"/>
         <EditorIndex Value="2"/>
         <TopLine Value="96"/>
-        <CursorPos X="72" Y="111"/>
+        <CursorPos X="32" Y="128"/>
         <UsageCount Value="200"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
@@ -41,11 +40,12 @@
       <Unit3>
         <Filename Value="p600emuclasses.pas"/>
         <IsPartOfProject Value="True"/>
-        <TopLine Value="460"/>
-        <CursorPos X="12" Y="472"/>
+        <IsVisibleTab Value="True"/>
+        <TopLine Value="443"/>
+        <CursorPos X="11" Y="473"/>
         <UsageCount Value="200"/>
         <Bookmarks Count="2">
-          <Item0 Y="503" ID="2"/>
+          <Item0 Y="504" ID="2"/>
           <Item1 Y="296" ID="1"/>
         </Bookmarks>
         <Loaded Value="True"/>
@@ -103,7 +103,7 @@
         <EditorIndex Value="-1"/>
         <TopLine Value="1224"/>
         <CursorPos X="2" Y="1259"/>
-        <UsageCount Value="0"/>
+        <UsageCount Value="10"/>
       </Unit10>
     </Units>
     <JumpHistory Count="30" HistoryIndex="29">

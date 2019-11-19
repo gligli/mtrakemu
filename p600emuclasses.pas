@@ -469,7 +469,8 @@ begin
     case AAddress of
       $0000..$3fff:
       begin
-        Assert(False);
+        debugln(['WROM ',hexStr(AAddress,4),' ',hexStr(AValue,2),' (',AValue,')']);
+        //Assert(False);
       end;
       $4000..$67ff:
       begin
