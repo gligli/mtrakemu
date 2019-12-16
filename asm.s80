@@ -19,7 +19,7 @@
 	ld a,($4079)
 	rra
 	ret c
-	ld a,($407d)
+	ld a,($44b9)
 	xor d
 	ret p
 	or d
@@ -36,7 +36,7 @@
 .org $35c4
 	push af
 	push de
-	ld hl,$407c
+	ld hl,$44b8
 	ld e,(hl)
 	ld a,($40c3)
 	rlca
