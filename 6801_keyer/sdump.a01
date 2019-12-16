@@ -1,64 +1,77 @@
 .memorymap
 	defaultslot 0
-	slotsize $4000
-	slot 0 $8000
+	slotsize $2000
+	slot 0 $a000
 .endme
 
 .rombankmap
 	bankstotal 1
-	banksize $4000
+	banksize $2000
 	banks 1
 .endro
 
-.macro char
-	staa	$13
-	nop
-	nop
-	nop
-	nop
-	nop
-	nop
-	nop
-	nop
-	nop
-	nop
-	nop
-	nop
-	nop
-	nop
-	nop
-	nop
-	nop
-	nop
-	nop
-	nop
-.endm
-
 .bank 0 slot 0
-	ldaa	#$04
+init:	
+	ldaa	#7
+	staa	0
+	staa	2
+	
+	dec	2
+
+	.repeat 64
+		nop
+	.endr
+
+	clr	$11
+
+	.repeat 64
+		nop
+	.endr
+
+	ldaa	#$09
 	staa	$10
-	ldaa	#$02
+
+	.repeat 64
+		nop
+	.endr
+
+	ldaa	#$0a
 	staa	$11
 
-	ldaa	#'P'
-	char
-	ldaa	#'o'
-	char
-	ldaa	#'u'
-	char
-	ldaa	#'e'
-	char
-	ldaa	#'t'
-	char
+	.repeat 64
+		nop
+	.endr
+
+	dec	2
+
+waitc:
+	ldaa    $11
+	bita	#$20
+	beq	waitc
+
 	ldaa	#'!'
-	char
+	staa	$13
 	
+	ldab	#$04
+repeat:
+	dec	2
+
 	ldx	#$f800
 loop:
+
+wait:
+	ldaa    $11
+	bita	#$20
+	beq	wait
+
 	ldaa	0,x
-	char
+	staa	$13
+	
 	inx
 	bne	loop
+
+	decb
+	bne	repeat
 
 end:
 	bra	end
@@ -66,7 +79,7 @@ end:
 dummy:
 	rti
 
-	.org	$3ff0
+	.org	$1ff0
 	.dw	dummy
 	.dw	dummy
 	.dw	dummy
