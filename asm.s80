@@ -14,25 +14,6 @@
 .org $0000
 	.dsb $3600,$ff
 
-.org $0234
-	ld d,a
-	ld a,($4079)
-	rra
-	ret c
-	ld a,($44b9)
-	xor d
-	ret p
-	or d
-	rrca
--:
-	ld bc,($409c)
-	add hl,bc
-	ld bc,($40f8)
-	add hl,bc
-	rrca
-	jr nc,-
-	ret
-	
 .org $35c4
 	push af
 	push de
@@ -52,7 +33,26 @@
 	dec l
 +:
 	ld (hl),d
-	ld l,$92
+	ld hl,$4092
 	pop de
 	pop af
+	ret
+
+.org $35df
+	ld d,a
+	ld a,($4079)
+	rra
+	ret c
+	ld a,($44b9)
+	xor d
+	ret p
+	or d
+	rrca
+-:
+	ld bc,($409c)
+	add hl,bc
+	ld bc,($40f8)
+	add hl,bc
+	rrca
+	jr nc,-
 	ret
