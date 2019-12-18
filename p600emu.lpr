@@ -16,6 +16,7 @@ begin
   RequireDerivedFormResource := True;
   Application.Initialize;
   Application.CreateForm(TMainForm, MainForm);
+  Application.Title := MainForm.Caption;
   Application.Run;
 end.
 
