@@ -15,6 +15,7 @@
 	.dsb $3600,$ff
 
 .org $0234
+	; "bender dest" patch, computing CVs
 	ld d,a
 	ld a,($4079)
 	rra
@@ -36,22 +37,47 @@
 .org $35c4
 	push af
 	push de
-	ld hl,$44b8
-	ld e,(hl)
-	ld a,($40c3)
-	rlca
-	rlca
-	rlca
-	ld d,a
-	xor e
-	jr z,+
-	inc l
+	
+	; buttons management
+	ld hl,$40c3
 	ld a,(hl)
-	xor d
-	ld (hl),a
-	dec l
-+:
-	ld (hl),d
+	and $18
+	jr z,end
+	rlca
+	rlca
+	rlca
+	rlca
+
+	inc l
+	ld e,(hl)
+	inc l
+	ld d,(hl)
+	rr e
+	rl d
+	inc l
+	bit 1,(hl)
+	jr z,noautocor
+	ld ($44b9),a
+noautocor:
+	ld e,a
+	
+	; "voice kill" patch	
+	ld h,$42
+	ld a,$17
+	jr vkstart
+vktoggle:
+	res 7,(hl)
+	bit 7,e
+	jr z,vkstart
+	set 7,(hl)
+vkstart:
+	ld l,a
+	add a,$20
+	srl d
+	jr c,vktoggle
+	jr nz,vkstart
+	
+end:	
 	ld hl,$4092
 	pop de
 	pop af

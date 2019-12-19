@@ -8,9 +8,10 @@
       <Unit0>
         <Filename Value="p600emu.lpr"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="-1"/>
-        <CursorPos X="48" Y="22"/>
+        <EditorIndex Value="1"/>
+        <CursorPos X="40" Y="22"/>
         <UsageCount Value="200"/>
+        <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit0>
       <Unit1>
@@ -20,9 +21,8 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="FMain"/>
-        <IsVisibleTab Value="True"/>
-        <TopLine Value="108"/>
-        <CursorPos X="21" Y="104"/>
+        <TopLine Value="96"/>
+        <CursorPos X="31" Y="151"/>
         <UsageCount Value="200"/>
         <Loaded Value="True"/>
         <LoadedDesigner Value="True"/>
@@ -31,10 +31,12 @@
       <Unit2>
         <Filename Value="raze.pas"/>
         <IsPartOfProject Value="True"/>
-        <EditorIndex Value="-1"/>
+        <IsVisibleTab Value="True"/>
+        <EditorIndex Value="2"/>
         <TopLine Value="9"/>
-        <CursorPos X="111" Y="45"/>
+        <CursorPos X="74" Y="57"/>
         <UsageCount Value="200"/>
+        <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
       </Unit2>
       <Unit3>
@@ -98,11 +100,19 @@
         <UsageCount Value="8"/>
       </Unit9>
     </Units>
-    <JumpHistory Count="1">
+    <JumpHistory Count="3" HistoryIndex="2">
       <Position1>
         <Filename Value="fmain.pas"/>
         <Caret Line="136" Column="15" TopLine="96"/>
       </Position1>
+      <Position2>
+        <Filename Value="fmain.pas"/>
+        <Caret Line="151" Column="31" TopLine="96"/>
+      </Position2>
+      <Position3>
+        <Filename Value="raze.pas"/>
+        <Caret Line="57" Column="74" TopLine="9"/>
+      </Position3>
     </JumpHistory>
     <RunParams>
       <FormatVersion Value="2"/>
