@@ -3,7 +3,7 @@
   <ProjectSession>
     <PathDelim Value="\"/>
     <Version Value="11"/>
-    <BuildModes Active="Debug"/>
+    <BuildModes Active="Release"/>
     <Units Count="10">
       <Unit0>
         <Filename Value="p600emu.lpr"/>
@@ -34,7 +34,7 @@
         <IsVisibleTab Value="True"/>
         <EditorIndex Value="2"/>
         <TopLine Value="9"/>
-        <CursorPos X="74" Y="57"/>
+        <CursorPos X="173" Y="24"/>
         <UsageCount Value="200"/>
         <Loaded Value="True"/>
         <DefaultSyntaxHighlighter Value="Delphi"/>
@@ -77,27 +77,27 @@
         <Filename Value="C:\lazarus\fpc\2.6.0\source\rtl\win\wininc\struct.inc"/>
         <TopLine Value="1416"/>
         <CursorPos X="6" Y="1446"/>
-        <UsageCount Value="2"/>
+        <UsageCount Value="1"/>
       </Unit6>
       <Unit7>
         <Filename Value="C:\lazarus\fpc\2.6.0\source\rtl\win\sysosh.inc"/>
         <TopLine Value="3"/>
         <CursorPos X="3" Y="33"/>
-        <UsageCount Value="2"/>
+        <UsageCount Value="1"/>
       </Unit7>
       <Unit8>
         <Filename Value="C:\lazarus\fpc\3.0.4\source\packages\fcl-base\src\contnrs.pp"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="108"/>
         <CursorPos X="3" Y="167"/>
-        <UsageCount Value="2"/>
+        <UsageCount Value="1"/>
       </Unit8>
       <Unit9>
         <Filename Value="C:\lazarus\fpc\3.0.4\source\packages\winunits-base\src\mmsystem.pp"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="1224"/>
         <CursorPos X="2" Y="1259"/>
-        <UsageCount Value="8"/>
+        <UsageCount Value="7"/>
       </Unit9>
     </Units>
     <JumpHistory Count="3" HistoryIndex="2">
