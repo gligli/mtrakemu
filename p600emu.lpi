@@ -30,10 +30,10 @@
             <Style Value="1"/>
             <SyntaxOptions>
               <SyntaxMode Value="Delphi"/>
+              <IncludeAssertionCode Value="True"/>
             </SyntaxOptions>
           </Parsing>
           <CodeGeneration>
-            <SmartLinkUnit Value="True"/>
             <TargetCPU Value="i386"/>
             <TargetOS Value="win32"/>
             <Optimizations>
@@ -44,7 +44,6 @@
             <Debugging>
               <GenerateDebugInfo Value="False"/>
             </Debugging>
-            <LinkSmart Value="True"/>
           </Linking>
         </CompilerOptions>
       </Item2>
