@@ -2055,14 +2055,14 @@ object MainForm: TMainForm
     Caption = 'Update memory'
     TabOrder = 10
   end
-  object btnAccesses: TButton
+  object btnHeatMap: TButton
     Left = 1217
     Height = 25
     Top = 2
     Width = 75
     Anchors = [akTop, akRight]
-    Caption = 'Accesses'
-    OnClick = btnAccessesClick
+    Caption = 'Heat map'
+    OnClick = btnHeatMapClick
     TabOrder = 11
   end
   object edAddr: TEdit

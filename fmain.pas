@@ -29,7 +29,7 @@ type
     btInit: TButton;
     btMetro: TToggleBox;
     btChorus: TToggleBox;
-    btnAccesses: TButton;
+    btnHeatMap: TButton;
     btnPoke: TButton;
     btStart: TToggleBox;
     btTick: TButton;
@@ -124,7 +124,7 @@ type
     tiTick: TTimer;
     tbRun: TToggleBox;
     procedure btInitClick(Sender: TObject);
-    procedure btnAccessesClick(Sender: TObject);
+    procedure btnHeatMapClick(Sender: TObject);
     procedure btnPokeClick(Sender: TObject);
     procedure btSaveClick(Sender: TObject);
     procedure btTickClick(Sender: TObject);
@@ -385,27 +385,42 @@ begin
   P600Emu.Initialize;
 end;
 
-procedure TMainForm.btnAccessesClick(Sender: TObject);
+procedure TMainForm.btnHeatMapClick(Sender: TObject);
 var
-  i, start: Integer;
+  i, j: Integer;
+  //start: Integer;
 begin
-  start := -1;
-  for i := 1 to 16*1024 - 1 do
+  //start := -1;
+  //for i := 1 to 16*1024 - 1 do
+  //begin
+  //  if (P600Emu.HW.RomAccesses[i] = 0) and (P600Emu.HW.RomAccesses[i - 1] <> 0) then
+  //  begin
+  //    start := i;
+  //  end;
+  //
+  //  if (P600Emu.HW.RomAccesses[i] <> 0) and (P600Emu.HW.RomAccesses[i - 1] = 0) and (start >= 0) then
+  //  begin
+  //    WriteLn(hexStr(start, 4), ' - ', hexStr(i, 4), #9, i - start);
+  //    start := -1;
+  //  end;
+  //end;
+  //
+  //if start >= 0 then
+  //  WriteLn(hexStr(start, 4), ' - 3FFF');
+  //
+  for i := $000 to $3ff do
   begin
-    if (P600Emu.HW.RomAccesses[i] = 0) and (P600Emu.HW.RomAccesses[i - 1] <> 0) then
-    begin
-      start := i;
-    end;
+    Write(hexStr(i, 3), '0 - ');
 
-    if (P600Emu.HW.RomAccesses[i] <> 0) and (P600Emu.HW.RomAccesses[i - 1] = 0) and (start >= 0) then
-    begin
-      WriteLn(hexStr(start, 4), ' - ', hexStr(i, 4), #9, i - start);
-      start := -1;
-    end;
+    for j := $0 to $f do
+      if P600Emu.HW.RomAccesses[i * 16 + j] > 0 then
+        Write(hexStr(min(P600Emu.HW.RomAccesses[i * 16 + j], $f),1))
+      else
+        Write('.');
+
+    WriteLn;
   end;
 
-  if start >= 0 then
-    WriteLn(hexStr(start, 4), ' - 3FFF');
 end;
 
 procedure TMainForm.btnPokeClick(Sender: TObject);

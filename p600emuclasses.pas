@@ -670,8 +670,6 @@ var
   ratio:Double;
   l: TP600LED;
 begin
-  UpdateZ80Context;
-
   FCurTick += ACount;
 
   // display remanance handling
