@@ -47,18 +47,18 @@ object MainForm: TMainForm
     GridLines = True
     OwnerData = True
     ReadOnly = True
-    TabOrder = 0
+    TabOrder = 7
     ViewStyle = vsReport
     OnData = lvCVData
   end
   object lbxInputDevices: TCheckListBox
     Left = 8
     Height = 128
-    Top = 40
+    Top = 64
     Width = 257
     ItemHeight = 0
     OnClickCheck = lbxInputDevicesClickCheck
-    TabOrder = 1
+    TabOrder = 5
   end
   object llCurCtrl: TLabel
     Left = 8
@@ -78,7 +78,7 @@ object MainForm: TMainForm
     Width = 64
     Caption = 'Run'
     OnChange = tbRunChange
-    TabOrder = 3
+    TabOrder = 0
   end
   object pnP600: TPanel
     Left = 0
@@ -91,7 +91,7 @@ object MainForm: TMainForm
     ClientWidth = 1300
     Color = clBlack
     ParentColor = False
-    TabOrder = 4
+    TabOrder = 15
     object kMasterTune: TuEKnob
       Left = 1008
       Height = 64
@@ -1965,7 +1965,7 @@ object MainForm: TMainForm
     GridLines = True
     OwnerData = True
     ReadOnly = True
-    TabOrder = 5
+    TabOrder = 8
     ViewStyle = vsReport
     OnData = lvGatesData
   end
@@ -1976,7 +1976,7 @@ object MainForm: TMainForm
     Width = 64
     Caption = 'Reset'
     OnClick = btInitClick
-    TabOrder = 6
+    TabOrder = 1
   end
   object btTick: TButton
     Left = 201
@@ -1985,7 +1985,7 @@ object MainForm: TMainForm
     Width = 64
     Caption = 'Next tick'
     OnClick = btTickClick
-    TabOrder = 8
+    TabOrder = 3
   end
   object btSave: TButton
     Left = 136
@@ -1994,16 +1994,16 @@ object MainForm: TMainForm
     Width = 64
     Caption = 'Save'
     OnClick = btSaveClick
-    TabOrder = 7
+    TabOrder = 2
   end
   object lbxOutputDevices: TCheckListBox
     Left = 8
     Height = 128
-    Top = 184
+    Top = 208
     Width = 257
     ItemHeight = 0
     OnClickCheck = lbxOutputDevicesClickCheck
-    TabOrder = 2
+    TabOrder = 6
   end
   object sgrMem: TStringGrid
     Left = 832
@@ -2018,7 +2018,7 @@ object MainForm: TMainForm
     MouseWheelOption = mwGrid
     Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goThumbTracking, goSmoothScroll]
     RowCount = 640
-    TabOrder = 9
+    TabOrder = 14
     TitleFont.CharSet = ANSI_CHARSET
     TitleFont.Height = -11
     TitleFont.Name = 'Tahoma'
@@ -2053,7 +2053,7 @@ object MainForm: TMainForm
     Top = 8
     Width = 96
     Caption = 'Update memory'
-    TabOrder = 10
+    TabOrder = 9
   end
   object btnHeatMap: TButton
     Left = 1217
@@ -2063,7 +2063,7 @@ object MainForm: TMainForm
     Anchors = [akTop, akRight]
     Caption = 'Heat map'
     OnClick = btnHeatMapClick
-    TabOrder = 11
+    TabOrder = 13
   end
   object edAddr: TEdit
     Left = 1060
@@ -2071,7 +2071,7 @@ object MainForm: TMainForm
     Top = 6
     Width = 80
     Anchors = [akTop, akRight]
-    TabOrder = 12
+    TabOrder = 10
     Text = '0'
   end
   object edValue: TEdit
@@ -2080,7 +2080,7 @@ object MainForm: TMainForm
     Top = 6
     Width = 32
     Anchors = [akTop, akRight]
-    TabOrder = 13
+    TabOrder = 11
     Text = '0'
   end
   object btnPoke: TButton
@@ -2091,13 +2091,23 @@ object MainForm: TMainForm
     Anchors = [akTop, akRight]
     Caption = 'Poke'
     OnClick = btnPokeClick
-    TabOrder = 14
+    TabOrder = 12
+  end
+  object chkInToKS: TCheckBox
+    Left = 8
+    Height = 19
+    Top = 40
+    Width = 149
+    Caption = 'MIDI in simulates keyboard'
+    Checked = True
+    State = cbChecked
+    TabOrder = 4
   end
   object tiTick: TTimer
     Enabled = False
     Interval = 10
     OnTimer = tiTickTimer
     left = 24
-    top = 48
+    top = 72
   end
 end

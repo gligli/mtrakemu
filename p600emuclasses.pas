@@ -72,6 +72,10 @@ type
     FDACValue:Word;
     FSHAD,FSHEnable:Byte;
 
+    FKSBytes:array[0..1] of Byte;
+    FKSAwaitingCount:Integer;
+    FKSInt:Boolean;
+
     FIncompleteCycles:Double;
 
     FZ80Context:array[z80_register] of Word;
@@ -120,6 +124,7 @@ type
     procedure RunCycles(ACount:Integer); // run ACount 4Mhz cycles
     procedure SendMIDIByte(AValue: Byte);
     function RecvMIDIByte(out AValue: Byte): Boolean;
+    procedure SendKeyScan(ANoteOn: Boolean; AKey: Byte; AVelocity: Byte = 0);
 
     property PotValues[APot:TP600Pot]:Word read GetPotValues write SetPotValues;
     property SevenSegment[AIndex:Integer]:Byte read GetSevenSegment;
@@ -149,7 +154,7 @@ type
     procedure Initialize;
     procedure SaveRamToFile;
 
-    procedure Tick; // advance one 5ms tick
+    procedure Tick; // advance one cTickMilliseconds tick
 
     property HW:TProphet600Hardware read FHW;
   end;
@@ -620,20 +625,38 @@ begin
 
     if AAddress and $10 <> 0 then
     begin
-      if AAddress and $07 = $05 then // /MISC_IN
-      begin
-        Result := $05;
-        if ADCCompare then
-          Result := Result or $80;
-        if FPICCntComp then
-          Result := Result or $02;
-      end
-      else if AAddress and $07 = $01 then // /SWITCH_IN
-      begin
-        bIdx := (FIOCSData[0] shr 5) * 16;
-        Result := $e0;
-        for i := 0 to 4 do
-          Result := Result or (ifthen(FKeyStates[i + bIdx], 1, 0) shl i);
+      case AAddress and $07 of
+        1:  // /SWITCH_IN
+        begin
+          bIdx := (FIOCSData[0] shr 5) * 16;
+          Result := $e0;
+          for i := 0 to 4 do
+            Result := Result or (ifthen(FKeyStates[i + bIdx], 1, 0) shl i);
+        end;
+        5: // /MISC_IN
+        begin
+          Result := $04;
+          if not FKSInt then
+            Result := Result or $01;
+          if FPICCntComp then
+            Result := Result or $02;
+          if ADCCompare then
+            Result := Result or $80;
+        end;
+        7: // /KEYDATA
+        begin
+          Result := 0;
+          if FKSAwaitingCount > 0 then
+          begin
+            Dec(FKSAwaitingCount);
+            Result := FKSBytes[High(FKSBytes) - FKSAwaitingCount];
+            if FKSAwaitingCount = 0 then
+              FKSInt := False;
+          end
+          else
+          begin
+          end;
+        end;
       end;
     end
     else
@@ -768,7 +791,7 @@ begin
 
   // int handling
 
-  if F7MsInt or FPICCntComp then
+  if F7MsInt or FPICCntComp or FKSInt then
     z80_raise_IRQ($38)
   else
     z80_lower_IRQ;
@@ -815,6 +838,23 @@ begin
     Result := True;
     AValue := Byte(FACIAXmitQueue.Pop);
   end;
+end;
+
+procedure TProphet600Hardware.SendKeyScan(ANoteOn: Boolean; AKey: Byte; AVelocity: Byte);
+begin
+  if ANoteOn then
+  begin
+    FKSAwaitingCount := 2;
+    FKSBytes[0] := AKey or $80;
+    FKSBytes[1] := AVelocity;
+  end
+  else
+  begin
+    FKSAwaitingCount := 2;
+    FKSBytes[0] := AKey;
+    FKSBytes[1] := AVelocity;
+  end;
+  FKSInt := True;
 end;
 
 end.

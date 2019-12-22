@@ -55,6 +55,7 @@ type
     btPrmEd: TToggleBox;
     btSeq: TToggleBox;
     btToTape: TToggleBox;
+    chkInToKS: TCheckBox;
     chkMem: TCheckBox;
     edAddr: TEdit;
     edValue: TEdit;
@@ -538,14 +539,25 @@ begin
   // print the message log
   DebugLn(Format( '%s: <Status> %.2x, <Data 1> %.2x <Data 2> %.2x', [ MidiInput.Devices[devIndex], r0, r1, r2 ] ));
 
-  if CStatusToByteCount[r0 shr 4] >= 1 then
-    P600Emu.HW.SendMIDIByte(r0);
+  if chkInToKS.Checked then
+  begin
+    if (CStatusToByteCount[r0 shr 4] = 3) and (r0 and $f0 in [$80, $90, $00]) then
+    begin
+      P600Emu.HW.SendKeyScan(((r0 and $f0) = $90) and (r2 <> 0), r1, r2);
+      P600Emu.Tick;
+    end;
+  end
+  else
+  begin
+    if CStatusToByteCount[r0 shr 4] >= 1 then
+      P600Emu.HW.SendMIDIByte(r0);
 
-  if CStatusToByteCount[r0 shr 4] >= 2 then
-    P600Emu.HW.SendMIDIByte(r1);
+    if CStatusToByteCount[r0 shr 4] >= 2 then
+      P600Emu.HW.SendMIDIByte(r1);
 
-  if CStatusToByteCount[r0 shr 4] >= 3 then
-    P600Emu.HW.SendMIDIByte(r2);
+    if CStatusToByteCount[r0 shr 4] >= 3 then
+      P600Emu.HW.SendMIDIByte(r2);
+  end;
 
   AMsg.Result:=0;
 end;
