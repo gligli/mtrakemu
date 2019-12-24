@@ -113,7 +113,7 @@ type
     constructor Create;
     destructor Destroy; override;
 
-    procedure Initialize;
+    procedure Initialize(AClearMem: Boolean);
 
     procedure LoadRomFromFile(AFileName:String);
     procedure LoadRamFromFile(AFileName:String);
@@ -151,7 +151,7 @@ type
     constructor Create;
     destructor Destroy; override;
 
-    procedure Initialize;
+    procedure Initialize(AClearMem: Boolean);
     procedure SaveRamToFile;
 
     procedure Tick; // advance one cTickMilliseconds tick
@@ -221,11 +221,12 @@ begin
   inherited Destroy;
 end;
 
-procedure TProphet600Emulator.Initialize;
+procedure TProphet600Emulator.Initialize(AClearMem: Boolean);
 begin
-  HW.Initialize;
+  HW.Initialize(AClearMem);
   HW.LoadRomFromFile(ExtractFilePath(ParamStr(0))+'mtrak.bin');
-  HW.LoadRamFromFile(ExtractFilePath(ParamStr(0))+'mtrak_nvram.bin');
+  if AClearMem then
+    HW.LoadRamFromFile(ExtractFilePath(ParamStr(0))+'mtrak_nvram.bin');
 
   z80_init_memmap;
   z80_map_fetch($0000,$3fff,@HW.FRom[0]);
@@ -389,12 +390,14 @@ begin
   inherited Destroy;
 end;
 
-procedure TProphet600Hardware.Initialize;
+procedure TProphet600Hardware.Initialize(AClearMem: Boolean);
 begin
   FCurTick := 0;
 
+  if AClearMem then
+    FillChar(FRam[0], SizeOf(FRam), $ff);
+
   FillDWord(FRomAccesses[0], Length(FRomAccesses), 0);
-  FillChar(FRam[0], SizeOf(FRam), $ff);
   FillChar(FDisplay[plA1], SizeOf(FDisplay), 0);
   FillChar(FCVValues[pcOsc6], SizeOf(FCVValues), 0);
   FillChar(FKeyStates[0], SizeOf(FKeyStates), 0);
@@ -595,10 +598,14 @@ begin
       begin
         Inc(FRomAccesses[AAddress]);
         Result := FRom[AAddress];
+        //if (AAddress = $3284) then
+        //  WriteLn(hexstr(FZ80Context[Z80_REG_BC],4),' ',hexstr(FZ80Context[Z80_REG_AF],4));
       end;
       $4000..$67ff:
       begin
         Result := FRam[AAddress and $3fff];
+        if (AAddress = $4079) and (FZ80Context[Z80_REG_PC] >= $324f) and (FZ80Context[Z80_REG_PC] < $3286) then
+          Sleep(0);
       end;
       $c000..$dfff:
       begin

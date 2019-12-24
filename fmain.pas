@@ -55,6 +55,7 @@ type
     btPrmEd: TToggleBox;
     btSeq: TToggleBox;
     btToTape: TToggleBox;
+    chkHotReset: TCheckBox;
     chkInToKS: TCheckBox;
     chkMem: TCheckBox;
     edAddr: TEdit;
@@ -383,7 +384,7 @@ end;
 procedure TMainForm.btInitClick(Sender: TObject);
 begin
   DebugLn(Caption);
-  P600Emu.Initialize;
+  P600Emu.Initialize(not chkHotReset.Checked);
 end;
 
 procedure TMainForm.btnHeatMapClick(Sender: TObject);
@@ -536,9 +537,6 @@ begin
   r2:=AMsg.lParam shr 8;
   r1:=AMsg.lParam;
 
-  // print the message log
-  DebugLn(Format( '%s: <Status> %.2x, <Data 1> %.2x <Data 2> %.2x', [ MidiInput.Devices[devIndex], r0, r1, r2 ] ));
-
   if chkInToKS.Checked then
   begin
     if (CStatusToByteCount[r0 shr 4] = 3) and (r0 and $f0 in [$80, $90, $00]) then
@@ -549,6 +547,9 @@ begin
   end
   else
   begin
+    // print the message log
+    DebugLn(Format( '%s: <Status> %.2x, <Data 1> %.2x <Data 2> %.2x', [ MidiInput.Devices[devIndex], r0, r1, r2 ] ));
+
     if CStatusToByteCount[r0 shr 4] >= 1 then
       P600Emu.HW.SendMIDIByte(r0);
 
