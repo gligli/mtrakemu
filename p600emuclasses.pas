@@ -5,7 +5,7 @@ unit p600emuclasses;
 interface
 
 uses
-  Classes, SysUtils, raze, LazLogger, math, windows, contnrs;
+  Classes, SysUtils, raze, LazLogger, math, windows, contnrs, typinfo;
 
 const
   cTickMilliseconds = 8;
@@ -98,6 +98,7 @@ type
     procedure SetRam(AAddress: Word; AValue: Byte);
     procedure UpdateCVs;
     procedure UpdateZ80Context;
+    procedure PrintZ80Context;
 
     // getters/setters
     function GetCVValues(ACV: TP600CV): Integer;
@@ -312,6 +313,14 @@ var
 begin
   for zr := Low(zr) to High(zr) do
     FZ80Context[zr] := z80_get_reg(zr);
+end;
+
+procedure TProphet600Hardware.PrintZ80Context;
+var
+  zr: z80_register;
+begin
+  for zr := Low(zr) to Z80_REG_SP do
+    DebugLn('%s:'#9'%.4x (%d)', [GetEnumName(TypeInfo(z80_register), Ord(zr)), FZ80Context[zr], FZ80Context[zr]]);
 end;
 
 function TProphet600Hardware.GetCVHertz(ACV: TP600CV): Double;
@@ -604,8 +613,11 @@ begin
       $4000..$67ff:
       begin
         Result := FRam[AAddress and $3fff];
-        if (AAddress = $4079) and (FZ80Context[Z80_REG_PC] >= $324f) and (FZ80Context[Z80_REG_PC] < $3286) then
-          Sleep(0);
+        //if (AAddress = $4079) and (FZ80Context[Z80_REG_PC] <> $33e) and (FZ80Context[Z80_REG_PC] <> $238) then
+        //begin
+        //  debugln(['RB ',Ord(AIsIO),' ',hexStr(AAddress,4),' ',hexStr(Result,2),' (',Result,')']);
+        //  PrintZ80Context;
+        //end;
       end;
       $c000..$dfff:
       begin
